@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logoImage from '../assets/freepik_br_570104c6-d98a-4035-a430-35ecf67600ef.png';
 import { Link } from 'react-router-dom';
 
 const LoginPage = () => {
-  {/*const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e) => {
@@ -24,12 +24,12 @@ const LoginPage = () => {
     } catch (error) {
       console.error('Error:', error);
     }
-  };*/}
+  };
 
   return (
     <div className="flex h-screen w-full">
       {/* Left Panel - Login Form */}
-      <div className="flex w-full flex-col justify-between p-30 md:w-3/5 ">
+      <div className="flex w-full flex-col justify-between p-15 md:w-2/5 ">
         {/* Logo */}
         <div className="mb-10">
           <div className="flex items-center">
@@ -42,12 +42,14 @@ const LoginPage = () => {
         <div className="mb-auto w-full max-w-md">
           <h1 className="mb-4 text-5xl font-bold text-gray-900">Login to Your Account</h1>
           
-          <form className="mt-10" /*onSubmit={handleSubmit}*/>
+          <form className="mt-10" onSubmit={handleSubmit}>
             <div className="mb-6">
               <input
                 type="username"
                 placeholder="Enter the User Name"
                 className="w-full rounded-full bg-gray-100 py-4 px-6 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             
@@ -56,6 +58,8 @@ const LoginPage = () => {
                 type="password"
                 placeholder="Enter the Password"
                 className="w-full rounded-full bg-gray-100 py-4 px-6 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               <button 
                 type="button" 
@@ -83,20 +87,28 @@ const LoginPage = () => {
                 </svg>
               </button>
             </div>
+
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <input type="checkbox" id="remember" className="mr-2" />
+                  <label htmlFor="remember" className="text-gray-700">Remember me</label>
+                </div>
+                <a href="#" className="text-blue-500 hover:underline">Forgot Password</a>
+              </div>
             
             <button
               type="submit"
-              className="mt-4 w-full rounded-full bg-teal-500 py-4 px-6 font-medium text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              className="mt-4 w-full rounded-full bg-green-500 py-4 px-6 font-medium text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
             >
-              Sign In
+              Log In
             </button>
           </form>
         </div>
       </div>
       
       {/* Right Panel - New User Section */}
-      <div className="hidden md:block md:w-2/5">
-        <div className="relative h-full w-full bg-gradient-to-br from-teal-400 to-teal-600">
+      <div className="hidden md:block md:w-3/5">
+        <div className="relative h-full w-full bg-gradient-to-br from-green-400 to-green-800">
           {/* Close button */}
           <button className="absolute right-6 top-6 text-white">
             <svg 
@@ -127,9 +139,11 @@ const LoginPage = () => {
               Welcome to the Irrigation DeptStore!<br />
             </p>
             <h2 className="mb-6 text-5xl font-bold">New Here?</h2>
-            <button className="rounded-full bg-white px-12 py-4 font-medium text-teal-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white">
-              Sign Up
-            </button>
+            <Link to="/register">
+              <button className="rounded-full bg-white px-12 py-4 font-medium text-teal-500 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-white">
+                Sign Up
+              </button>
+            </Link>
           </div>
         </div>
       </div>
