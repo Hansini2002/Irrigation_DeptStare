@@ -136,6 +136,66 @@ app.post('/register', (req, res) => {
   });
 });
 
+//endpoint to get low stock count
+// This endpoint returns the count of items in the inventory where quantity is below the minimum level
+app.get('/api/low-stock-count', authenticateToken, (req, res) => {
+  // Query to count items where quantity is below minimum level
+  const query = `
+  SELECT SUM(count) as total_count FROM (
+    SELECT COUNT(*) as count FROM tools WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM materials WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM blasting_materials WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM spare_parts WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM stationary WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM fuel_and_lubricants WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM vehicle_and_machines WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM office_equipments WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM used_tools WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM local_purchasing WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM counterfoil_register WHERE quantity < minimum_level
+    UNION ALL
+    SELECT COUNT(*) as count FROM publications WHERE quantity < minimum_level
+  ) as combined_counts
+`;
+  
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    
+    res.json({ 
+      success: true, 
+      count: results[0].count 
+    });
+  });
+});
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.sendStatus(401);
+  
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+}
+
 (async () => {
   const PORT = await detectPort(5000);
   app.listen(PORT, () => {

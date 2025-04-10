@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import logoImage from '../assets/freepik_br_570104c6-d98a-4035-a430-35ecf67600ef.png';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,11 +19,19 @@ const LoginPage = () => {
         body: JSON.stringify({ username, password }),
       });
       const data = await response.json();
+
       if (data.success) {
-        alert('Login successful!');
-        // Redirect to dashboard or another page
+              toast.success('Login successful!');
+              // Store user data in localStorage or context
+              localStorage.setItem('token', data.token);
+              localStorage.setItem('user', JSON.stringify(data.user));
+              
+              // Redirect after 1 second
+              setTimeout(() => {
+                navigate('/dashboard');
+              }, 1000);
       } else {
-        alert('Invalid credentials');
+        alert('Invalid username or password');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -96,12 +108,13 @@ const LoginPage = () => {
                 <a href="#" className="text-blue-500 hover:underline">Forgot Password</a>
               </div>
             
+            <Link to="/dashboard">
             <button
               type="submit"
               className="mt-4 w-full rounded-full bg-green-500 py-4 px-6 font-medium text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
             >
               Log In
-            </button>
+            </button></Link>
           </form>
         </div>
       </div>
