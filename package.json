@@ -12,10 +12,14 @@
     "tailwind": "tailwindcss -i ./src/index.css -o ./dist/output.css --watch"
   },
   "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
     "detect-port": "^2.1.0",
     "dotenv": "^16.4.7",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.487.0",
+    "mysql2": "^3.14.0",
     "postcss-cli": "^11.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

@@ -51,7 +51,7 @@ export default function IrrigationDashboard() {
       {/* Sidebar */}
       <div className="w-64 h-full flex flex-col bg-green-400">
         {/* Logo and Title */}
-        <div className="flex items-center p-4">
+        <div className="flex items-center p-3">
           <div>
             <img src={logoImage} alt="Logo" className="w-12 h-12 mr-5"/>
           </div>
@@ -59,7 +59,7 @@ export default function IrrigationDashboard() {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 mt-4">
+        <nav className="flex-1 mt-2">
           <ul>
             <li className="mb-1">
               <a href="#" className="flex items-center px-4 py-3 bg-blue-400 text-black-900 rounded-lg mx-2">
@@ -97,7 +97,7 @@ export default function IrrigationDashboard() {
         </div>
 
         {/* Calendar Section */}
-        <div className="mt-auto p-4">
+        <div className="mt-auto p-2">
           <div className="bg-yellow-400 rounded-t-lg p-2">
             <img src={CalendarImage} alt="Calendar Image" className="w-full h-24 object-cover rounded" />
             <div className="text-center font-bold text-green-800 py-2">January</div>
