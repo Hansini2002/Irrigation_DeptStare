@@ -13,11 +13,21 @@ export default function IrrigationDashboard() {
   // Check if user is authenticated (simple version without token verification)
   useEffect(() => {
     const userData = localStorage.getItem('user');
-    if (!userData) {
+    const token = localStorage.getItem('token');
+    if (!userData || !token) {
       navigate('/login');
-    } else {
-      setUser(JSON.parse(userData));
-      fetchLowStockCount(); // Fetch low stock count from the server
+      return;
+    }
+    try {
+      // Verify the token structure (basic check)
+      const user = JSON.parse(userData);
+      setUser(user);
+      fetchLowStockCount();
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      navigate('/login');
     }
   }, [navigate]);
 
@@ -62,35 +72,39 @@ export default function IrrigationDashboard() {
         <nav className="flex-1 mt-2">
           <ul>
             <li className="mb-1">
-              <a href="#" className="flex items-center px-4 py-3 bg-blue-400 text-black-900 rounded-lg mx-2">
+              <div className="flex items-center px-4 py-3 bg-blue-400 text-black-900 rounded-lg mx-2">
                 <Grid className="mr-3" size={20} />
                 <span>Dashboard</span>
-              </a>
+              </div>
             </li>
             <li className="mb-1">
-              <a href="#" className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2">
+              <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
+              onClick={() => navigate('/stock-details')}>
                 <FileText className="mr-3" size={20} />
                 <span>Reports & Forms</span>
-              </a>
+              </div>
             </li>
             <li className="mb-1">
-              <a href="#" className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2">
+              <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
+              onClick={() => navigate('/inventory-book')}>
                 <Package className="mr-3" size={20} />
                 <span>Inventory Book</span>
-              </a>
+              </div>
             </li>
             <li className="mb-1">
-              <a href="#" className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2">
+              <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
+              onClick={() => navigate('/suppliers')}>
                 <Users className="mr-3" size={20} />
                 <span>Suppliers</span>
-              </a>
+              </div>
             </li>
           </ul>
         </nav>
 
         {/* New Item Button */}
         <div className="px-4 py-4 ml-10">
-          <button className="flex items-center px-4 py-2 bg-blue-400 text-black-900 rounded-full">
+          <button className="flex items-center px-4 py-2 bg-blue-400 hover:bg-blue-600 text-black-900 rounded-full"
+          onClick={() => navigate('/new-item')}>
             <Plus size={18} className="mr-2" />
             <span>New Item</span>
           </button>
@@ -126,8 +140,7 @@ export default function IrrigationDashboard() {
         <div className="mt-auto p-4">
           <button 
             onClick={handleLogout}
-            className="flex items-center px-4 py-2 w-full bg-green-600 text-white rounded"
-          >
+            className="flex items-center px-4 py-2 w-full bg-green-600 hover:bg-gray-400 text-white rounded">
             <LogOut size={18} className="mr-2" />
             <span>Logout</span>
           </button>
@@ -149,7 +162,7 @@ export default function IrrigationDashboard() {
             </div>
           </div>
           <div className="flex items-center">
-            <Bell size={24} className="mr-4" />
+            <Bell size={24} className="mr-4" onClick={() => navigate('/notifications')}/>
             <span className="font-bold text-lg">Hello {user?.name || 'User'},</span>
           </div>
         </header>
@@ -165,8 +178,9 @@ export default function IrrigationDashboard() {
                 <h3 className="text-black mb-2">Balance/Liability</h3>
                 <div className="bg-blue-400 p-4 rounded flex justify-between items-center">
                   <span className="text-2xl font-bold">Rs. 14,032.56</span>
-                  <button className="flex items-center px-4 py-2 bg-blue-400 text-black-900 rounded-full">
-                    <ArrowBigRightIcon className="mr-1" size={28} />
+                  <button className="flex items-center px-4 py-2 bg-blue-400 text-black-900 rounded-full"
+                  onClick={() => navigate('/fuel-account')}>
+                    <ArrowBigRightIcon className="mr-1 hover:bg-blue-600" size={28} />
                   </button>
                 </div>
               </div>
@@ -179,8 +193,9 @@ export default function IrrigationDashboard() {
                 <h3 className="text-black mb-2">No. of alerts</h3>
                 <div className="bg-blue-400 p-4 rounded flex justify-between items-center">
                   <span className="text-2xl font-bold">{lowstockCount}</span>
-                  <button className="flex items-center px-4 py-2 bg-blue-400 text-black-900 rounded-full">
-                    <ArrowBigRightIcon className="mr-1" size={28} />
+                  <button className="flex items-center px-4 py-2 bg-blue-400 text-black-900 rounded-full"
+                  onClick={() => navigate('/stock-details')}>
+                    <ArrowBigRightIcon className="mr-1 hover:bg-blue-600" size={28} />
                   </button>
                 </div>
               </div>
@@ -188,61 +203,77 @@ export default function IrrigationDashboard() {
           </div>
 
           {/* Category Grid */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             {/* Row 1 */}
             <div className="bg-lime-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/category/tools')}>
+                onClick={() => navigate('/tools')}>
               <h2 className="text-2xl font-bold text-white">Tools</h2>
             </div>
             <div className="bg-green-700 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/category/materials')}>
+                onClick={() => navigate('/materials')}>
               <h2 className="text-2xl font-bold text-white">Materials</h2>
             </div>
             <div className="bg-emerald-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/category/blasting-materials')}>
+                onClick={() => navigate('/blasting-materials')}>
               <h2 className="text-2xl font-bold text-white text-center">Blasting Materials</h2>
+            </div>
+            <div className="bg-cyan-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
+                onClick={() => navigate('/office-furniture')}>
+              <h2 className="text-2xl font-bold text-white text-center">Office Furniture</h2>
             </div>
 
             {/* Row 2 */}
             <div className="bg-lime-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/category/spare-parts')}>
+                onClick={() => navigate('/spare-parts')}>
               <h2 className="text-2xl font-bold text-white">Spare Parts</h2>
             </div>
             <div className="bg-green-700 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/category/stationary')}>
+                onClick={() => navigate('/stationary')}>
               <h2 className="text-2xl font-bold text-white">Stationary</h2>
             </div>
             <div className="bg-emerald-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/category/fuel-and-lubricants')}>
+                onClick={() => navigate('/fuel-and-lubricants')}>
               <h2 className="text-2xl font-bold text-white text-center">Fuel & Lubricants</h2>
+            </div>
+            <div className="bg-cyan-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
+                onClick={() => navigate('/survey-and-drawing-instruments')}>
+              <h2 className="text-2xl font-bold text-white text-center">Survey & Drawing Instruments</h2>
             </div>
 
             {/* Row 3 */}
             <div className="bg-lime-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/category/vehicle-and-machines')}>
+                onClick={() => navigate('/vehicle-and-machines')}>
               <h2 className="text-2xl font-bold text-white text-center">Vehicle & Machines</h2>
             </div>
             <div className="bg-green-700 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/category/office-equipments')}>
+                onClick={() => navigate('/office-equipments')}>
               <h2 className="text-2xl font-bold text-white text-center">Office Equipments</h2>
             </div>
             <div className="bg-emerald-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/category/used-tools')}>
+                onClick={() => navigate('/used-tools')}>
               <h2 className="text-2xl font-bold text-white">Used Tools</h2>
+            </div>
+            <div className="bg-cyan-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
+                onClick={() => navigate('/salvage-items')}>
+              <h2 className="text-2xl font-bold text-white">Salvage Items</h2>
             </div>
 
             {/* Row 4 */}
             <div className="bg-lime-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/category/local-purchasing')}>
+                onClick={() => navigate('/local-purchasing')}>
               <h2 className="text-2xl font-bold text-white text-center">Local Purchasing</h2>
             </div>
             <div className="bg-green-700 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/category/counterfoil-register')}>
+                onClick={() => navigate('/counterfoil-register')}>
               <h2 className="text-2xl font-bold text-white text-center">Counterfoil Register</h2>
             </div>
             <div className="bg-emerald-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/category/publications')}>
+                onClick={() => navigate('/publications')}>
               <h2 className="text-2xl font-bold text-white">Publications</h2>
+            </div>
+            <div className="bg-cyan-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
+                onClick={() => navigate('/welfare-articles')}>
+              <h2 className="text-2xl font-bold text-white">Welfare Articles</h2>
             </div>
           </div>
         </div>

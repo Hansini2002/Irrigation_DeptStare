@@ -4,21 +4,21 @@ import { Grid, FileText, Package, Users, Edit, Trash, Plus } from 'react-feather
 import CalendarImage from '../assets/Deduru Oya.jpg';
 import { useNavigate } from 'react-router-dom';
 
-export default function ToolsPage() {
+export default function Materials() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [tools, setTools] = useState([]);
+    const [materials, setMaterial] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
-    const [newTool, setNewTool] = useState({
+    const [newMaterial, setNewMaterial] = useState({
         name: '',
         quantity: '',
         minimum_level: '',
         lastrecieveddate: ''
     });
 
-    const fetchTools = () => {
+    const fetchMaterial = () => {
         const token = localStorage.getItem('token');
-        fetch('http://localhost:5000/api/tools', {
+        fetch('http://localhost:5000/api/materials', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -27,46 +27,46 @@ export default function ToolsPage() {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
-            .then((data) => setTools(data))
-            .catch((error) => console.error('Error fetching tools:', error));
+            .then((data) => setMaterial(data))
+            .catch((error) => console.error('Error fetching materials:', error));
     };
 
-    const handleAddTool = () => {
+    const handleAddMaterial = () => {
         const token = localStorage.getItem('token');
         
         // Validate required fields
-        if (!newTool.name || !newTool.quantity) {
+        if (!newMaterial.name || !newMaterial.quantity) {
             alert('Name and Quantity are required fields');
             return;
         }
     
         // Prepare the data to send
-        const toolData = {
-            name: newTool.name,
-            quantity: parseInt(newTool.quantity),
-            minimum_level: parseInt(newTool.minimum_level) || 1, // Default to 1 if not provided
-            lastrecieveddate: newTool.lastrecieveddate || new Date().toISOString().split('T')[0]
+        const materialData = {
+            name: newMaterial.name,
+            quantity: parseInt(newMaterial.quantity),
+            minimum_level: parseInt(newMaterial.minimum_level) || 1, // Default to 1 if not provided
+            lastrecieveddate: newMaterial.lastrecieveddate || new Date().toISOString().split('T')[0]
         };
     
-        fetch('http://localhost:5000/api/tools', {
+        fetch('http://localhost:5000/api/materials', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(toolData)
+            body: JSON.stringify(materialData)
         })
         .then((response) => {
             if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.message || 'Failed to add the tool') });
+                return response.json().then(err => { throw new Error(err.message || 'Failed to add the material') });
             }
             return response.json();
         })
         .then((data) => {
             if (data.success) {
-                fetchTools(); // Refresh the tools list
+                fetchMaterial(); // Refresh the material list
                 setIsAdding(false);
-                setNewTool({
+                setNewMaterial({
                     name: '',
                     quantity: '',
                     minimum_level: '',
@@ -75,14 +75,14 @@ export default function ToolsPage() {
             }
         })
         .catch((error) => {
-            console.error('Error adding the tool:', error);
-            alert(error.message || 'Error adding tool');
+            console.error('Error adding the material:', error);
+            alert(error.message || 'Error adding material');
         });
     };
 
-    const handleEdit = (toolId, updatedFields) => {
+    const handleEdit = (materialId, updatedFields) => {
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:5000/api/tools/${toolId}`, {
+        fetch(`http://localhost:5000/api/materials/${materialId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -91,32 +91,32 @@ export default function ToolsPage() {
             body: JSON.stringify(updatedFields)
         })
             .then((response) => {
-                if (!response.ok) throw new Error('Failed to update tool');
-                fetchTools();
+                if (!response.ok) throw new Error('Failed to update material');
+                fetchMaterial();
             })
-            .catch((error) => console.error('Error updating tool:', error));
+            .catch((error) => console.error('Error updating material:', error));
     };
 
-    const handleDelete = (toolId) => {
+    const handleDelete = (materialId) => {
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:5000/api/tools/${toolId}`, {
+        fetch(`http://localhost:5000/api/materials/${materialId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         })
             .then((response) => {
-                if (!response.ok) throw new Error('Failed to delete tool');
-                setTools(tools.filter((tool) => tool.toolId !== toolId));
+                if (!response.ok) throw new Error('Failed to delete material');
+                setMaterial(materials.filter((tool) => tool.toolId !== materialId));
             })
             .catch((error) => console.error('Error deleting tool:', error));
     };
 
     useEffect(() => {
-        fetchTools();
+        fetchMaterial();
     }, []);
 
-    const filteredTools = tools.filter(tool => 
+    const filteredMaterials = materials.filter(tool => 
         tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         tool.toolId.toString().includes(searchTerm)
     );
@@ -204,31 +204,31 @@ export default function ToolsPage() {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col bg-white rounded-l-lg p-4">
-                <div className="tools-page">
+                <div className="materials-page">
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold">Tools</h1>
+                        <h1 className="text-2xl font-bold">Materials</h1>
                         <div>
                         <button 
                                 className="bg-yellow-500 text-black px-4 py-2 rounded flex items-center"
                                 onClick={() => setIsAdding(!isAdding)}
                             >
                                 <Plus className="mr-1" size={16} />
-                                {isAdding ? 'Cancel' : 'Add Tool'}
+                                {isAdding ? 'Cancel' : 'Add Material'}
                             </button>
                         </div>
                     </div>
 
                     {isAdding && (
                         <div className="mb-4 p-4 border border-gray-300 rounded">
-                            <h2 className="text-lg font-semibold mb-3">Add New Tool</h2>
+                            <h2 className="text-lg font-semibold mb-3">Add New Material</h2>
                             <div className="grid grid-cols-2 gap-4 mb-3">
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Name</label>
                                     <input
                                         type="text"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.name}
-                                        onChange={(e) => setNewTool({...newTool, name: e.target.value})}
+                                        value={newMaterial.name}
+                                        onChange={(e) => setNewMaterial({...newMaterial, name: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -236,8 +236,8 @@ export default function ToolsPage() {
                                     <input
                                         type="number"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.quantity}
-                                        onChange={(e) => setNewTool({...newTool, quantity: e.target.value})}
+                                        value={newMaterial.quantity}
+                                        onChange={(e) => setNewMaterial({...newMaterial, quantity: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -245,8 +245,8 @@ export default function ToolsPage() {
                                     <input
                                         type="number"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.minimum_level}
-                                        onChange={(e) => setNewTool({...newTool, minimum_level: e.target.value})}
+                                        value={newMaterial.minimum_level}
+                                        onChange={(e) => setNewMaterial({...newMaterial, minimum_level: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -254,15 +254,15 @@ export default function ToolsPage() {
                                     <input
                                         type="date"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.lastrecieveddate}
-                                        onChange={(e) => setNewTool({...newTool, lastrecieveddate: e.target.value})}
+                                        value={newMaterial.lastrecieveddate}
+                                        onChange={(e) => setNewMaterial({...newMaterial, lastrecieveddate: e.target.value})}
                                     />
                                 </div>
                             </div>
                             <button
                                 className="bg-green-500 text-white px-4 py-2 rounded"
-                                onClick={handleAddTool}>
-                                Save Tool
+                                onClick={handleAddMaterial}>
+                                Save
                             </button>
                         </div>
                     )}
@@ -271,7 +271,7 @@ export default function ToolsPage() {
                         <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded"
-                            placeholder="Search tools..."
+                            placeholder="Search material..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -281,7 +281,7 @@ export default function ToolsPage() {
                         <table className="w-full border-collapse">
                             <thead className="bg-gray-100">
                                 <tr>
-                                    <th className="border border-gray-300 p-2 text-left">Tool ID</th>
+                                    <th className="border border-gray-300 p-2 text-left">Material ID</th>
                                     <th className="border border-gray-300 p-2 text-left">Name</th>
                                     <th className="border border-gray-300 p-2 text-left">Quantity</th>
                                     <th className="border border-gray-300 p-2 text-left">Last Received Date</th>
@@ -289,11 +289,11 @@ export default function ToolsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                            {filteredTools.length > 0 ? (
-                                    filteredTools.map((tool) => (
-                                        <ToolRow 
-                                            key={tool.toolId} 
-                                            tool={tool} 
+                            {filteredMaterials.length > 0 ? (
+                                    filteredMaterials.map((material) => (
+                                        <MaterialRow 
+                                            key={material.materialId} 
+                                            tool={material} 
                                             onEdit={handleEdit} 
                                             onDelete={handleDelete} 
                                         />
@@ -301,7 +301,7 @@ export default function ToolsPage() {
                                 ) : (
                                     <tr>
                                         <td colSpan="6" className="border border-gray-300 p-2 text-center">
-                                            {tools.length === 0 ? 'No tools available' : 'No matching tool found'}
+                                            {materials.length === 0 ? 'No materials available' : 'No matching material found'}
                                         </td>
                                     </tr>
                                 )}
@@ -314,28 +314,28 @@ export default function ToolsPage() {
     );
 }
 
-function ToolRow({ tool, onEdit, onDelete }) {
+function MaterialRow({ material, onEdit, onDelete }) {
     const [isEditing, setIsEditing] = useState(false);
-    const [editedTool, setEditedTool] = useState({...tool});
+    const [editedMaterial, setEditedMaterial] = useState({...material});
 
     const handleSave = () => {
-        onEdit(tool.toolId, editedTool);
+        onEdit(material.toolId, editedMaterial);
         setIsEditing(false);
     };
 
     return (
         <tr className="hover:bg-gray-50">
-            <td className="border border-gray-300 p-2">{tool.toolId}</td>
+            <td className="border border-gray-300 p-2">{material.materialId}</td>
             <td className="border border-gray-300 p-2">
                 {isEditing ? (
                     <input
                         type="text"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedTool.name}
-                        onChange={(e) => setEditedTool({...editedTool, name: e.target.value})}
+                        value={editedMaterial.name}
+                        onChange={(e) => setEditedMaterial({...editedMaterial, name: e.target.value})}
                     />
                 ) : (
-                    tool.name
+                    material.name
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -343,11 +343,11 @@ function ToolRow({ tool, onEdit, onDelete }) {
                     <input
                         type="number"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedTool.quantity}
-                        onChange={(e) => setEditedTool({...editedTool, quantity: e.target.value})}
+                        value={editedMaterial.quantity}
+                        onChange={(e) => setEditedMaterial({...editedMaterial, quantity: e.target.value})}
                     />
                 ) : (
-                    tool.quantity
+                    material.quantity
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -355,11 +355,11 @@ function ToolRow({ tool, onEdit, onDelete }) {
                     <input
                         type="number"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedTool.minimum_level}
-                        onChange={(e) => setEditedTool({...editedTool, minimum_level: e.target.value})}
+                        value={editedMaterial.minimum_level}
+                        onChange={(e) => setEditedMaterial({...editedMaterial, minimum_level: e.target.value})}
                     />
                 ) : (
-                    tool.minimum_level
+                    material.minimum_level
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -367,11 +367,11 @@ function ToolRow({ tool, onEdit, onDelete }) {
                     <input
                         type="date"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedTool.lastrecieveddate ? editedTool.lastrecieveddate.split('T')[0] : ''}
-                        onChange={(e) => setEditedTool({...editedTool, lastrecieveddate: e.target.value})}
+                        value={editedMaterial.lastrecieveddate ? editedMaterial.lastrecieveddate.split('T')[0] : ''}
+                        onChange={(e) => setEditedMaterial({...editedMaterial, lastrecieveddate: e.target.value})}
                     />
                 ) : (
-                    tool.lastrecieveddate ? new Date(tool.lastrecieveddate).toLocaleDateString() : 'N/A'
+                    material.lastrecieveddate ? new Date(material.lastrecieveddate).toLocaleDateString() : 'N/A'
                 )}
             </td>
             <td className="border border-gray-300 p-2 flex space-x-2">
@@ -400,7 +400,7 @@ function ToolRow({ tool, onEdit, onDelete }) {
                         <Trash
                             className="text-red-500 cursor-pointer"
                             size={16}
-                            onClick={() => onDelete(tool.toolId)}
+                            onClick={() => onDelete(material.materialId)}
                         />
                     </>
                 )}

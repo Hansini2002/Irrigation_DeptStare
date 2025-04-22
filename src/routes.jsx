@@ -3,6 +3,8 @@ import App from './App';
 import LoginPage from './components/Login';
 import CreateAccountPage from './components/Register';
 import Dashboard from './components/Dashboard';
+import ToolsPage from './components/Tools';
+import Materials from './components/Materials';
 import ErrorPage from './components/ErrorPage';
 
 const router = createBrowserRouter([
@@ -27,6 +29,14 @@ const router = createBrowserRouter([
         path: 'dashboard',
         element: <Dashboard />
       },
+      {
+        path: 'tools', 
+        element: <ToolsPage />
+      },
+      {
+        path: 'materials',
+        element: <Materials />
+      }
       
     ]
   }

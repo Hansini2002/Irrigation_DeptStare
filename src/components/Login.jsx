@@ -12,29 +12,34 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!username || !password) {
+      toast.error('Please enter username or password');
+      return;
+    }
     try {
       const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
-
+    
       if (data.success) {
-              toast.success('Login successful!');
-              // Store user data in localStorage or context
-              localStorage.setItem('token', data.token);
-              localStorage.setItem('user', JSON.stringify(data.user));
-              
-              // Redirect after 1 second
-              setTimeout(() => {
-                navigate('/dashboard');
-              }, 1000);
+        toast.success('Login successful!');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        navigate('/dashboard');
       } else {
-        alert('Invalid username or password');
+        toast.error(data.message || 'Invalid username or password');
       }
     } catch (error) {
       console.error('Error:', error);
+      toast.error('Login failed. Please try again.');
     }
   };
 
@@ -108,13 +113,12 @@ const LoginPage = () => {
                 <a href="#" className="text-blue-500 hover:underline">Forgot Password</a>
               </div>
             
-            <Link to="/dashboard">
             <button
               type="submit"
               className="mt-4 w-full rounded-full bg-green-500 py-4 px-6 font-medium text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
             >
               Log In
-            </button></Link>
+            </button>
           </form>
         </div>
       </div>
