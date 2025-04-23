@@ -5,6 +5,9 @@ import CreateAccountPage from './components/Register';
 import Dashboard from './components/Dashboard';
 import ToolsPage from './components/Tools';
 import Materials from './components/Materials';
+import SpareParts from './components/Spare Parts';
+import VehicleandMachines from './components/Vehicle and Machines';
+import LocalPurchasing from './components/Local Purchasing';
 import ErrorPage from './components/ErrorPage';
 
 const router = createBrowserRouter([
@@ -36,6 +39,18 @@ const router = createBrowserRouter([
       {
         path: 'materials',
         element: <Materials />
+      },
+      {
+        path: 'spare-parts',
+        element: <SpareParts />
+      },
+      {
+        path: 'vehicle-and-machines',
+        element: <VehicleandMachines />
+      },
+      {
+        path: 'local-purchasing',
+        element: <LocalPurchasing />
       }
       
     ]

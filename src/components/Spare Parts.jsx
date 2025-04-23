@@ -4,21 +4,21 @@ import { Grid, FileText, Package, Users, Edit, Trash, Plus } from 'react-feather
 import CalendarImage from '../assets/Deduru Oya.jpg';
 import { useNavigate } from 'react-router-dom';
 
-export default function Materials() {
+export default function SpareParts() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [materials, setMaterial] = useState([]);
+    const [spareParts, setSparePart] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
-    const [newMaterial, setNewMaterial] = useState({
+    const [newSparePart, setNewSparePart] = useState({
         name: '',
         quantity: '',
         minimum_level: '',
         lastrecieveddate: ''
     });
 
-    const fetchMaterial = () => {
+    const fetchSparePart = () => {
         const token = localStorage.getItem('token');
-        fetch('http://localhost:5000/api/materials', {
+        fetch('http://localhost:5000/api/spare-parts', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -27,46 +27,46 @@ export default function Materials() {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
-            .then((data) => setMaterial(data))
-            .catch((error) => console.error('Error fetching materials:', error));
+            .then((data) => setSparePart(data))
+            .catch((error) => console.error('Error fetching spare parts:', error));
     };
 
-    const handleAddMaterial = () => {
+    const handleAddSparePart = () => {
         const token = localStorage.getItem('token');
         
         // Validate required fields
-        if (!newMaterial.name || !newMaterial.quantity) {
+        if (!newSparePart.name || !newSparePart.quantity) {
             alert('Name and Quantity are required fields');
             return;
         }
     
         // Prepare the data to send
-        const materialData = {
-            name: newMaterial.name,
-            quantity: parseInt(newMaterial.quantity),
-            minimum_level: parseInt(newMaterial.minimum_level) || 1, // Default to 1 if not provided
-            lastrecieveddate: newMaterial.lastrecieveddate || new Date().toISOString().split('T')[0]
+        const SparePartData = {
+            name: newSparePart.name,
+            quantity: parseInt(newSparePart.quantity),
+            minimum_level: parseInt(newSparePart.minimum_level) || 1, // Default to 1 if not provided
+            lastrecieveddate: newSparePart.lastrecieveddate || new Date().toISOString().split('T')[0]
         };
     
-        fetch('http://localhost:5000/api/materials', {
+        fetch('http://localhost:5000/api/spare-parts', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(materialData)
+            body: JSON.stringify(SparePartData)
         })
         .then((response) => {
             if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.message || 'Failed to add the material') });
+                return response.json().then(err => { throw new Error(err.message || 'Failed to add the spare parts') });
             }
             return response.json();
         })
         .then((data) => {
             if (data.success) {
-                fetchMaterial(); // Refresh the material list
+                fetchSparePart(); // Refresh the spare parts list
                 setIsAdding(false);
-                setNewMaterial({
+                setNewSparePart({
                     name: '',
                     quantity: '',
                     minimum_level: '',
@@ -75,14 +75,14 @@ export default function Materials() {
             }
         })
         .catch((error) => {
-            console.error('Error adding the material:', error);
-            alert(error.message || 'Error adding material');
+            console.error('Error adding the spare part:', error);
+            alert(error.message || 'Error adding spare part');
         });
     };
 
-    const handleEdit = (materialId, updatedFields) => {
+    const handleEdit = (SPId, updatedFields) => {
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:5000/api/materials/${materialId}`, {
+        fetch(`http://localhost:5000/api/spare-part/${SPId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -91,34 +91,34 @@ export default function Materials() {
             body: JSON.stringify(updatedFields)
         })
             .then((response) => {
-                if (!response.ok) throw new Error('Failed to update material');
-                fetchMaterial();
+                if (!response.ok) throw new Error('Failed to update spare part');
+                fetchSparePart();
             })
-            .catch((error) => console.error('Error updating material:', error));
+            .catch((error) => console.error('Error updating spare part:', error));
     };
 
-    const handleDelete = (materialId) => {
+    const handleDelete = (SPId) => {
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:5000/api/materials/${materialId}`, {
+        fetch(`http://localhost:5000/api/spare-part/${SPId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         })
             .then((response) => {
-                if (!response.ok) throw new Error('Failed to delete material');
-                setMaterial(materials.filter((material) => material.materialId !== materialId));
+                if (!response.ok) throw new Error('Failed to delete spare part');
+                setSparePart(spareParts.filter((spareParts) => spareParts.SPId !== SPId));
             })
-            .catch((error) => console.error('Error deleting material:', error));
+            .catch((error) => console.error('Error deleting spare part:', error));
     };
 
     useEffect(() => {
-        fetchMaterial();
+        fetchSparePart();
     }, []);
 
-    const filteredMaterials = materials.filter(material => 
-        material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        material.materialId.toString().includes(searchTerm)
+    const filteredSpareParts = spareParts.filter(spareParts => 
+        spareParts.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        spareParts.SPId.toString().includes(searchTerm)
     );
 
     return (
@@ -204,31 +204,31 @@ export default function Materials() {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col bg-white rounded-l-lg p-4">
-                <div className="materials-page">
+                <div className="Spare-Part-page">
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold">Materials</h1>
+                        <h1 className="text-2xl font-bold">Spare Parts</h1>
                         <div>
                         <button 
                                 className="bg-yellow-500 text-black px-4 py-2 rounded flex items-center"
                                 onClick={() => setIsAdding(!isAdding)}
                             >
                                 <Plus className="mr-1" size={16} />
-                                {isAdding ? 'Cancel' : 'Add Material'}
+                                {isAdding ? 'Cancel' : 'Add Spare Part'}
                             </button>
                         </div>
                     </div>
 
                     {isAdding && (
                         <div className="mb-4 p-4 border border-gray-300 rounded">
-                            <h2 className="text-lg font-semibold mb-3">Add New Material</h2>
+                            <h2 className="text-lg font-semibold mb-3">Add New Spare Part</h2>
                             <div className="grid grid-cols-2 gap-4 mb-3">
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Name</label>
                                     <input
                                         type="text"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newMaterial.name}
-                                        onChange={(e) => setNewMaterial({...newMaterial, name: e.target.value})}
+                                        value={newSparePart.name}
+                                        onChange={(e) => setNewSparePart({...newSparePart, name: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -236,8 +236,8 @@ export default function Materials() {
                                     <input
                                         type="number"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newMaterial.quantity}
-                                        onChange={(e) => setNewMaterial({...newMaterial, quantity: e.target.value})}
+                                        value={newSparePart.quantity}
+                                        onChange={(e) => setNewSparePart({...newSparePart, quantity: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -245,8 +245,8 @@ export default function Materials() {
                                     <input
                                         type="number"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newMaterial.minimum_level}
-                                        onChange={(e) => setNewMaterial({...newMaterial, minimum_level: e.target.value})}
+                                        value={newSparePart.minimum_level}
+                                        onChange={(e) => setNewSparePart({...newSparePart, minimum_level: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -254,14 +254,14 @@ export default function Materials() {
                                     <input
                                         type="date"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newMaterial.lastrecieveddate}
-                                        onChange={(e) => setNewMaterial({...newMaterial, lastrecieveddate: e.target.value})}
+                                        value={newSparePart.lastrecieveddate}
+                                        onChange={(e) => setNewSparePart({...newSparePart, lastrecieveddate: e.target.value})}
                                     />
                                 </div>
                             </div>
                             <button
                                 className="bg-green-500 text-white px-4 py-2 rounded"
-                                onClick={handleAddMaterial}>
+                                onClick={handleAddSparePart}>
                                 Save
                             </button>
                         </div>
@@ -271,7 +271,7 @@ export default function Materials() {
                         <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded"
-                            placeholder="Search material..."
+                            placeholder="Search spare part..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -281,7 +281,7 @@ export default function Materials() {
                         <table className="w-full border-collapse">
                             <thead className="bg-gray-100">
                                 <tr>
-                                    <th className="border border-gray-300 p-2 text-left">Material ID</th>
+                                    <th className="border border-gray-300 p-2 text-left">SP ID</th>
                                     <th className="border border-gray-300 p-2 text-left">Name</th>
                                     <th className="border border-gray-300 p-2 text-left">Quantity</th>
                                     <th className="border border-gray-300 p-2 text-left">Last Received Date</th>
@@ -289,11 +289,11 @@ export default function Materials() {
                                 </tr>
                             </thead>
                             <tbody>
-                            {filteredMaterials.length > 0 ? (
-                                    filteredMaterials.map((material) => (
-                                        <MaterialRow 
-                                            key={material.materialId} 
-                                            material={material} 
+                            {filteredSpareParts.length > 0 ? (
+                                    filteredSpareParts.map((spareParts) => (
+                                        <SparePartsRow 
+                                            key={spareParts.SPId} 
+                                            spareParts={spareParts} 
                                             onEdit={handleEdit} 
                                             onDelete={handleDelete} 
                                         />
@@ -301,7 +301,7 @@ export default function Materials() {
                                 ) : (
                                     <tr>
                                         <td colSpan="6" className="border border-gray-300 p-2 text-center">
-                                            {materials.length === 0 ? 'No materials available' : 'No matching material found'}
+                                            {spareParts.length === 0 ? 'No Spare Part available' : 'No matching Spare Part found'}
                                         </td>
                                     </tr>
                                 )}
@@ -314,28 +314,28 @@ export default function Materials() {
     );
 }
 
-function MaterialRow({ material, onEdit, onDelete }) {
+function SparePartsRow({ spareParts, onEdit, onDelete }) {
     const [isEditing, setIsEditing] = useState(false);
-    const [editedMaterial, setEditedMaterial] = useState({...material});
+    const [editedSpareParts, setEditedSpareParts] = useState({...spareParts});
 
     const handleSave = () => {
-        onEdit(material.materialId, editedMaterial);
+        onEdit(spareParts.SPId, editedSpareParts);
         setIsEditing(false);
     };
 
     return (
         <tr className="hover:bg-gray-50">
-            <td className="border border-gray-300 p-2">{material.materialId}</td>
+            <td className="border border-gray-300 p-2">{spareParts.SPId}</td>
             <td className="border border-gray-300 p-2">
                 {isEditing ? (
                     <input
                         type="text"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedMaterial.name}
-                        onChange={(e) => setEditedMaterial({...editedMaterial, name: e.target.value})}
+                        value={editedSpareParts.name}
+                        onChange={(e) => setEditedSpareParts({...editedSpareParts, name: e.target.value})}
                     />
                 ) : (
-                    material.name
+                    spareParts.name
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -343,11 +343,11 @@ function MaterialRow({ material, onEdit, onDelete }) {
                     <input
                         type="number"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedMaterial.quantity}
-                        onChange={(e) => setEditedMaterial({...editedMaterial, quantity: e.target.value})}
+                        value={editedSpareParts.quantity}
+                        onChange={(e) => setEditedSpareParts({...editedSpareParts, quantity: e.target.value})}
                     />
                 ) : (
-                    material.quantity
+                    spareParts.quantity
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -355,11 +355,11 @@ function MaterialRow({ material, onEdit, onDelete }) {
                     <input
                         type="number"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedMaterial.minimum_level}
-                        onChange={(e) => setEditedMaterial({...editedMaterial, minimum_level: e.target.value})}
+                        value={editedSpareParts.minimum_level}
+                        onChange={(e) => setEditedSpareParts({...editedSpareParts, minimum_level: e.target.value})}
                     />
                 ) : (
-                    material.minimum_level
+                    spareParts.minimum_level
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -367,11 +367,11 @@ function MaterialRow({ material, onEdit, onDelete }) {
                     <input
                         type="date"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedMaterial.lastrecieveddate ? editedMaterial.lastrecieveddate.split('T')[0] : ''}
-                        onChange={(e) => setEditedMaterial({...editedMaterial, lastrecieveddate: e.target.value})}
+                        value={editedSpareParts.lastrecieveddate ? editedSpareParts.lastrecieveddate.split('T')[0] : ''}
+                        onChange={(e) => setEditedSpareParts({...editedSpareParts, lastrecieveddate: e.target.value})}
                     />
                 ) : (
-                    material.lastrecieveddate ? new Date(material.lastrecieveddate).toLocaleDateString() : 'N/A'
+                    spareParts.lastrecieveddate ? new Date(spareParts.lastrecieveddate).toLocaleDateString() : 'N/A'
                 )}
             </td>
             <td className="border border-gray-300 p-2 flex space-x-2">
@@ -400,7 +400,7 @@ function MaterialRow({ material, onEdit, onDelete }) {
                         <Trash
                             className="text-red-500 cursor-pointer"
                             size={16}
-                            onClick={() => onDelete(material.materialId)}
+                            onClick={() => onDelete(spareParts.SPId)}
                         />
                     </>
                 )}

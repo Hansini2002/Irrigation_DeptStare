@@ -213,6 +213,7 @@ function authenticateToken(req, res, next) {
   });
 }
 
+// Tools Endpoints
 // Get all tools
 app.get('/api/tools', authenticateToken, (req, res) => {
   const query = 'SELECT * FROM tools';
@@ -239,7 +240,7 @@ app.post('/api/tools', authenticateToken, (req, res) => {
   }
 
   const query = 'INSERT INTO tools (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
-  db.query(query, [name, quantity, minimum_level || 5, lastrecieveddate || new Date()], (err, result) => {
+  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
     if (err) {
       return res.status(500).json({ 
         success: false, 
@@ -305,6 +306,7 @@ app.delete('/api/tools/:id', authenticateToken, (req, res) => {
   });
 });
 
+//Materials Endpoints
 // Get all materials
 app.get('/api/materials', authenticateToken, (req, res) => {
   const query = 'SELECT * FROM materials';
@@ -393,6 +395,285 @@ app.delete('/api/materials/:id', authenticateToken, (req, res) => {
     res.json({ 
       success: true, 
       message: 'Material deleted successfully' 
+    });
+  });
+});
+
+// Spare Parts Endpoints
+// Get all spare parts
+app.get('/api/spare-parts', authenticateToken, (req, res) => {
+  const query = 'SELECT * FROM spare_parts';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json(results);
+  });
+});
+
+// Add a new spare part
+app.post('/api/spare-parts', authenticateToken, (req, res) => {
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  
+  if (!name || !quantity) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Name and quantity are required' 
+    });
+  }
+
+  const query = 'INSERT INTO spare_parts (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
+  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Added successfully',
+      toolId: result.insertId 
+    });
+  });
+});
+
+// Update a spare part
+app.put('/api/spare-parts/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+
+  const query = 'UPDATE spare_parts SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE SP_ID = ?';
+  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Spare Part not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Updated successfully' 
+    });
+  });
+});
+
+// Delete a spare part
+app.delete('/api/spare-parts/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM spare_parts WHERE SP_ID = ?';
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Deleted successfully' 
+    });
+  });
+});
+
+// Vehicle and Machines Endpoints
+// Get all vehicles and machines
+app.get('/api/vehicle-and-machines', authenticateToken, (req, res) => {
+  const query = 'SELECT * FROM vehicle_and_machines';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json(results);
+  });
+});
+
+// Add a new vehicle or machine
+app.post('/api/vehicle-and-machines', authenticateToken, (req, res) => {
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  
+  if (!name || !quantity) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Name and quantity are required' 
+    });
+  }
+
+  const query = 'INSERT INTO vehicle_and_machine (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
+  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Added successfully',
+      toolId: result.insertId 
+    });
+  });
+});
+
+// Update a vehicle or machine
+app.put('/api/vehicle-and-machine/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+
+  const query = 'UPDATE vehicle_and_machine SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE VM_ID = ?';
+  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Vehicle and Machine not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Updated successfully' 
+    });
+  });
+});
+
+// Delete a vehicle or machine
+app.delete('/api/vehicle-and-machine/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM vehicle_and_machine WHERE VM_ID = ?';
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Deleted successfully' 
+    });
+  });
+});
+
+// Local Purchasing Endpoints
+// Get all local purchasing items
+app.get('/api/local-purchasing', authenticateToken, (req, res) => {
+  const query = 'SELECT * FROM local_purchasing';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json(results);
+  });
+});
+
+// Add a new local purchasing item
+app.post('/api/local-purchasing', authenticateToken, (req, res) => {
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  
+  if (!name || !quantity) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Name and quantity are required' 
+    });
+  }
+
+  const query = 'INSERT INTO local_purchasing (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
+  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Added successfully',
+      toolId: result.insertId 
+    });
+  });
+});
+
+// Update a local purchasing item
+app.put('/api/local-purchasing/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+
+  const query = 'UPDATE local_purchasing SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE LP_ID = ?';
+  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Local Purchasing item not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Updated successfully' 
+    });
+  });
+});
+
+// Delete a local purchasing item
+app.delete('/api/local-purchasing/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM local_purchasing WHERE LP_ID = ?';
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Deleted successfully' 
     });
   });
 });

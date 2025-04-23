@@ -4,21 +4,21 @@ import { Grid, FileText, Package, Users, Edit, Trash, Plus } from 'react-feather
 import CalendarImage from '../assets/Deduru Oya.jpg';
 import { useNavigate } from 'react-router-dom';
 
-export default function Materials() {
+export default function LocalPurchasing() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [materials, setMaterial] = useState([]);
+    const [LocalPurchasing, setLocalPurchasing] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
-    const [newMaterial, setNewMaterial] = useState({
+    const [newLocalPurchasing, setNewLocalPurchasing] = useState({
         name: '',
         quantity: '',
         minimum_level: '',
         lastrecieveddate: ''
     });
 
-    const fetchMaterial = () => {
+    const fetchLocalPurchasing = () => {
         const token = localStorage.getItem('token');
-        fetch('http://localhost:5000/api/materials', {
+        fetch('http://localhost:5000/api/local-purchasing', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -27,46 +27,46 @@ export default function Materials() {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
-            .then((data) => setMaterial(data))
-            .catch((error) => console.error('Error fetching materials:', error));
+            .then((data) => setLocalPurchasing(data))
+            .catch((error) => console.error('Error fetching local purchasing:', error));
     };
 
-    const handleAddMaterial = () => {
+    const handleAddLocalPurchasing = () => {
         const token = localStorage.getItem('token');
         
         // Validate required fields
-        if (!newMaterial.name || !newMaterial.quantity) {
+        if (!newLocalPurchasing.name || !newLocalPurchasing.quantity) {
             alert('Name and Quantity are required fields');
             return;
         }
     
         // Prepare the data to send
-        const materialData = {
-            name: newMaterial.name,
-            quantity: parseInt(newMaterial.quantity),
-            minimum_level: parseInt(newMaterial.minimum_level) || 1, // Default to 1 if not provided
-            lastrecieveddate: newMaterial.lastrecieveddate || new Date().toISOString().split('T')[0]
+        const LocalPurchasingData = {
+            name: newLocalPurchasing.name,
+            quantity: parseInt(newLocalPurchasing.quantity),
+            minimum_level: parseInt(newLocalPurchasing.minimum_level) || 1, // Default to 1 if not provided
+            lastrecieveddate: newLocalPurchasing.lastrecieveddate || new Date().toISOString().split('T')[0]
         };
     
-        fetch('http://localhost:5000/api/materials', {
+        fetch('http://localhost:5000/api/local-purchasing', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(materialData)
+            body: JSON.stringify(LocalPurchasingData)
         })
         .then((response) => {
             if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.message || 'Failed to add the material') });
+                return response.json().then(err => { throw new Error(err.message || 'Failed to add the local purchasing') });
             }
             return response.json();
         })
         .then((data) => {
             if (data.success) {
-                fetchMaterial(); // Refresh the material list
+                fetchLocalPurchasing(); // Refresh the local purchasing list
                 setIsAdding(false);
-                setNewMaterial({
+                setNewLocalPurchasing({
                     name: '',
                     quantity: '',
                     minimum_level: '',
@@ -75,14 +75,14 @@ export default function Materials() {
             }
         })
         .catch((error) => {
-            console.error('Error adding the material:', error);
-            alert(error.message || 'Error adding material');
+            console.error('Error adding the local purchasing:', error);
+            alert(error.message || 'Error adding local purchasing');
         });
     };
 
-    const handleEdit = (materialId, updatedFields) => {
+    const handleEdit = (LP_ID, updatedFields) => {
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:5000/api/materials/${materialId}`, {
+        fetch(`http://localhost:5000/api/local-purchasing/${LP_ID}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -91,34 +91,34 @@ export default function Materials() {
             body: JSON.stringify(updatedFields)
         })
             .then((response) => {
-                if (!response.ok) throw new Error('Failed to update material');
-                fetchMaterial();
+                if (!response.ok) throw new Error('Failed to update local purchasing');
+                fetchLocalPurchasing();
             })
-            .catch((error) => console.error('Error updating material:', error));
+            .catch((error) => console.error('Error updating local purchasing:', error));
     };
 
-    const handleDelete = (materialId) => {
+    const handleDelete = (LP_ID) => {
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:5000/api/materials/${materialId}`, {
+        fetch(`http://localhost:5000/api/local-purchasing/${LP_ID}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         })
             .then((response) => {
-                if (!response.ok) throw new Error('Failed to delete material');
-                setMaterial(materials.filter((material) => material.materialId !== materialId));
+                if (!response.ok) throw new Error('Failed to delete local purchasing');
+                setLocalPurchasing(LocalPurchasing.filter((LocalPurchasing) => LocalPurchasing.LP_ID !== LP_ID));
             })
-            .catch((error) => console.error('Error deleting material:', error));
+            .catch((error) => console.error('Error deleting local purchasing:', error));
     };
 
     useEffect(() => {
-        fetchMaterial();
+        fetchLocalPurchasing();
     }, []);
 
-    const filteredMaterials = materials.filter(material => 
-        material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        material.materialId.toString().includes(searchTerm)
+    const filteredLocalPurchasing = LocalPurchasing.filter(LocalPurchasing => 
+        LocalPurchasing.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        LocalPurchasing.LP_ID.toString().includes(searchTerm)
     );
 
     return (
@@ -204,31 +204,31 @@ export default function Materials() {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col bg-white rounded-l-lg p-4">
-                <div className="materials-page">
+                <div className="local-purchasing-page">
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold">Materials</h1>
+                        <h1 className="text-2xl font-bold">Local Purchasing</h1>
                         <div>
                         <button 
                                 className="bg-yellow-500 text-black px-4 py-2 rounded flex items-center"
                                 onClick={() => setIsAdding(!isAdding)}
                             >
                                 <Plus className="mr-1" size={16} />
-                                {isAdding ? 'Cancel' : 'Add Material'}
+                                {isAdding ? 'Cancel' : 'Add local purchasing'}
                             </button>
                         </div>
                     </div>
 
                     {isAdding && (
                         <div className="mb-4 p-4 border border-gray-300 rounded">
-                            <h2 className="text-lg font-semibold mb-3">Add New Material</h2>
+                            <h2 className="text-lg font-semibold mb-3">Add New Local Purchasing</h2>
                             <div className="grid grid-cols-2 gap-4 mb-3">
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Name</label>
                                     <input
                                         type="text"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newMaterial.name}
-                                        onChange={(e) => setNewMaterial({...newMaterial, name: e.target.value})}
+                                        value={newLocalPurchasing.name}
+                                        onChange={(e) => setNewLocalPurchasing({...newLocalPurchasing, name: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -236,8 +236,8 @@ export default function Materials() {
                                     <input
                                         type="number"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newMaterial.quantity}
-                                        onChange={(e) => setNewMaterial({...newMaterial, quantity: e.target.value})}
+                                        value={newLocalPurchasing.quantity}
+                                        onChange={(e) => setNewLocalPurchasing({...newLocalPurchasing, quantity: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -245,8 +245,8 @@ export default function Materials() {
                                     <input
                                         type="number"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newMaterial.minimum_level}
-                                        onChange={(e) => setNewMaterial({...newMaterial, minimum_level: e.target.value})}
+                                        value={newLocalPurchasing.minimum_level}
+                                        onChange={(e) => setNewLocalPurchasing({...newLocalPurchasing, minimum_level: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -254,14 +254,14 @@ export default function Materials() {
                                     <input
                                         type="date"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newMaterial.lastrecieveddate}
-                                        onChange={(e) => setNewMaterial({...newMaterial, lastrecieveddate: e.target.value})}
+                                        value={newLocalPurchasing.lastrecieveddate}
+                                        onChange={(e) => setNewLocalPurchasing({...newLocalPurchasing, lastrecieveddate: e.target.value})}
                                     />
                                 </div>
                             </div>
                             <button
                                 className="bg-green-500 text-white px-4 py-2 rounded"
-                                onClick={handleAddMaterial}>
+                                onClick={handleAddLocalPurchasing}>
                                 Save
                             </button>
                         </div>
@@ -271,7 +271,7 @@ export default function Materials() {
                         <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded"
-                            placeholder="Search material..."
+                            placeholder="Search local purchasing..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -281,7 +281,7 @@ export default function Materials() {
                         <table className="w-full border-collapse">
                             <thead className="bg-gray-100">
                                 <tr>
-                                    <th className="border border-gray-300 p-2 text-left">Material ID</th>
+                                    <th className="border border-gray-300 p-2 text-left">LP ID</th>
                                     <th className="border border-gray-300 p-2 text-left">Name</th>
                                     <th className="border border-gray-300 p-2 text-left">Quantity</th>
                                     <th className="border border-gray-300 p-2 text-left">Last Received Date</th>
@@ -289,11 +289,11 @@ export default function Materials() {
                                 </tr>
                             </thead>
                             <tbody>
-                            {filteredMaterials.length > 0 ? (
-                                    filteredMaterials.map((material) => (
-                                        <MaterialRow 
-                                            key={material.materialId} 
-                                            material={material} 
+                            {filteredLocalPurchasing.length > 0 ? (
+                                    filteredLocalPurchasing.map((LocalPurchasing) => (
+                                        <LocalPurchasingRow 
+                                            key={LocalPurchasing.LP_ID} 
+                                            LocalPurchasing={LocalPurchasing} 
                                             onEdit={handleEdit} 
                                             onDelete={handleDelete} 
                                         />
@@ -301,7 +301,7 @@ export default function Materials() {
                                 ) : (
                                     <tr>
                                         <td colSpan="6" className="border border-gray-300 p-2 text-center">
-                                            {materials.length === 0 ? 'No materials available' : 'No matching material found'}
+                                            {LocalPurchasing.length === 0 ? 'No local purchasing available' : 'No matching local purchasing found'}
                                         </td>
                                     </tr>
                                 )}
@@ -314,28 +314,28 @@ export default function Materials() {
     );
 }
 
-function MaterialRow({ material, onEdit, onDelete }) {
+function LocalPurchasingRow({ LocalPurchasing, onEdit, onDelete }) {
     const [isEditing, setIsEditing] = useState(false);
-    const [editedMaterial, setEditedMaterial] = useState({...material});
+    const [editedLocalPurchasing, setEditedSparePartsLocalPurchasing] = useState({...LocalPurchasing});
 
     const handleSave = () => {
-        onEdit(material.materialId, editedMaterial);
+        onEdit(LocalPurchasing.LP_ID, editedLocalPurchasing);
         setIsEditing(false);
     };
 
     return (
         <tr className="hover:bg-gray-50">
-            <td className="border border-gray-300 p-2">{material.materialId}</td>
+            <td className="border border-gray-300 p-2">{LocalPurchasing.LP_ID}</td>
             <td className="border border-gray-300 p-2">
                 {isEditing ? (
                     <input
                         type="text"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedMaterial.name}
-                        onChange={(e) => setEditedMaterial({...editedMaterial, name: e.target.value})}
+                        value={editedLocalPurchasing.name}
+                        onChange={(e) => setEditedSparePartsLocalPurchasing({...editedLocalPurchasing, name: e.target.value})}
                     />
                 ) : (
-                    material.name
+                    LocalPurchasing.name
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -343,11 +343,11 @@ function MaterialRow({ material, onEdit, onDelete }) {
                     <input
                         type="number"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedMaterial.quantity}
-                        onChange={(e) => setEditedMaterial({...editedMaterial, quantity: e.target.value})}
+                        value={editedLocalPurchasing.quantity}
+                        onChange={(e) => setEditedSparePartsLocalPurchasing({...editedLocalPurchasing, quantity: e.target.value})}
                     />
                 ) : (
-                    material.quantity
+                    LocalPurchasing.quantity
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -355,11 +355,11 @@ function MaterialRow({ material, onEdit, onDelete }) {
                     <input
                         type="number"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedMaterial.minimum_level}
-                        onChange={(e) => setEditedMaterial({...editedMaterial, minimum_level: e.target.value})}
+                        value={editedLocalPurchasing.minimum_level}
+                        onChange={(e) => setEditedSparePartsLocalPurchasing({...editedLocalPurchasing, minimum_level: e.target.value})}
                     />
                 ) : (
-                    material.minimum_level
+                    LocalPurchasing.minimum_level
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -367,11 +367,11 @@ function MaterialRow({ material, onEdit, onDelete }) {
                     <input
                         type="date"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedMaterial.lastrecieveddate ? editedMaterial.lastrecieveddate.split('T')[0] : ''}
-                        onChange={(e) => setEditedMaterial({...editedMaterial, lastrecieveddate: e.target.value})}
+                        value={editedLocalPurchasing.lastrecieveddate ? editedLocalPurchasing.lastrecieveddate.split('T')[0] : ''}
+                        onChange={(e) => setEditedSparePartsLocalPurchasing({...editedLocalPurchasing, lastrecieveddate: e.target.value})}
                     />
                 ) : (
-                    material.lastrecieveddate ? new Date(material.lastrecieveddate).toLocaleDateString() : 'N/A'
+                    LocalPurchasing.lastrecieveddate ? new Date(LocalPurchasing.lastrecieveddate).toLocaleDateString() : 'N/A'
                 )}
             </td>
             <td className="border border-gray-300 p-2 flex space-x-2">
@@ -400,7 +400,7 @@ function MaterialRow({ material, onEdit, onDelete }) {
                         <Trash
                             className="text-red-500 cursor-pointer"
                             size={16}
-                            onClick={() => onDelete(material.materialId)}
+                            onClick={() => onDelete(LocalPurchasing.LP_ID)}
                         />
                     </>
                 )}
