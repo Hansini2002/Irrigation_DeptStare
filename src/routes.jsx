@@ -8,6 +8,9 @@ import Materials from './components/Materials';
 import SpareParts from './components/Spare Parts';
 import VehicleandMachines from './components/Vehicle and Machines';
 import LocalPurchasing from './components/Local Purchasing';
+import StationaryPage from './components/Stationary';
+import OfficeEquipments from './components/Office Equipments';
+import CounterfoilRegisterPage from './components/Counterfoil Register';
 import ErrorPage from './components/ErrorPage';
 
 const router = createBrowserRouter([
@@ -51,6 +54,18 @@ const router = createBrowserRouter([
       {
         path: 'local-purchasing',
         element: <LocalPurchasing />
+      },
+      {
+        path: 'stationary',
+        element: <StationaryPage />
+      },
+      {
+        path: 'office-equipments',
+        element: <OfficeEquipments />
+      },
+      {
+        path: 'counterfoil-register',
+        element: <CounterfoilRegisterPage />
       }
       
     ]

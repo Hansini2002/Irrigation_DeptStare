@@ -8,6 +8,9 @@ import Materials from './components/Materials';
 import SpareParts from './components/Spare Parts';
 import VehicleandMachines from './components/Vehicle and Machines';
 import LocalPurchasing from './components/Local Purchasing';
+import StationaryPage from './components/Stationary';
+import OfficeEquipments from './components/Office Equipments';
+import CounterfoilRegisterPage from './components/Counterfoil Register';
 import './index.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,6 +26,9 @@ const App = () => (
       <Route path="/spare-parts" element={<SpareParts />} />
       <Route path="/vehicle-and-machines" element={<VehicleandMachines />} />
       <Route path="/local-purchasing" element={<LocalPurchasing />} />
+      <Route path="/stationary" element={<StationaryPage />} />
+      <Route path="/office-equipments" element={<OfficeEquipments />} />
+      <Route path="/counterfoil-register" element={<CounterfoilRegisterPage />} />
       <Route path="/" element={<LoginPage />} /> {/* Default route */}
     </Routes>
   </Router>

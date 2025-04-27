@@ -678,6 +678,285 @@ app.delete('/api/local-purchasing/:id', authenticateToken, (req, res) => {
   });
 });
 
+// Stationary Endpoints
+// Get all Stationary items
+app.get('/api/stationary', authenticateToken, (req, res) => {
+  const query = 'SELECT * FROM stationary';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json(results);
+  });
+});
+
+// Add a new Stationary item
+app.post('/api/stationary', authenticateToken, (req, res) => {
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  
+  if (!name || !quantity) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Name and quantity are required' 
+    });
+  }
+
+  const query = 'INSERT INTO stationary (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
+  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Added successfully',
+      toolId: result.insertId 
+    });
+  });
+});
+
+// Update a stationary item
+app.put('/api/stationary/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+
+  const query = 'UPDATE stationary SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE ST_ID = ?';
+  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Item not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Updated successfully' 
+    });
+  });
+});
+
+// Delete a stationary item
+app.delete('/api/stationary/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM stationary WHERE ST_ID = ?';
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Deleted successfully' 
+    });
+  });
+});
+
+// Office Equipments Endpoints
+// Get all office equipment items
+app.get('/api/office-equipments', authenticateToken, (req, res) => {
+  const query = 'SELECT * FROM office_equipments';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json(results);
+  });
+});
+
+// Add a new office equipment item
+app.post('/api/office-equipments', authenticateToken, (req, res) => {
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  
+  if (!name || !quantity) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Name and quantity are required' 
+    });
+  }
+
+  const query = 'INSERT INTO office_equipments (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
+  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Added successfully',
+      toolId: result.insertId 
+    });
+  });
+});
+
+// Update a office equipment item
+app.put('/api/office_equipments/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+
+  const query = 'UPDATE office_equipments SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE OE_ID = ?';
+  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Item not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Updated successfully' 
+    });
+  });
+});
+
+// Delete a office equipment item
+app.delete('/api/office_equipments/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM office_equipments WHERE OE_ID = ?';
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Deleted successfully' 
+    });
+  });
+});
+
+// Counterfoil Register Endpoints
+// Get all counterfoil register items
+app.get('/api/counterfoil-register', authenticateToken, (req, res) => {
+  const query = 'SELECT * FROM counterfoil_register';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json(results);
+  });
+});
+
+// Add a new counterfoil register item
+app.post('/api/counterfoil-register', authenticateToken, (req, res) => {
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  
+  if (!name || !quantity) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Name and quantity are required' 
+    });
+  }
+
+  const query = 'INSERT INTO counterfoil_register (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
+  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Added successfully',
+      toolId: result.insertId 
+    });
+  });
+});
+
+// Update a counterfoil register item
+app.put('/api/counterfoil-register/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+
+  const query = 'UPDATE counterfoil_register SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE CR_ID = ?';
+  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Item not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Updated successfully' 
+    });
+  });
+});
+
+// Delete a counterfoil register item
+app.delete('/api/counterfoil-register/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+
+  const query = 'DELETE FROM counterfoil_register WHERE CR_ID = ?';
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Deleted successfully' 
+    });
+  });
+});
+
 (async () => {
   const PORT = await detectPort(5000);
   app.listen(PORT, () => {
