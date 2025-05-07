@@ -12,6 +12,7 @@ import StationaryPage from './components/Stationary';
 import OfficeEquipments from './components/Office Equipments';
 import CounterfoilRegisterPage from './components/Counterfoil Register';
 import ErrorPage from './components/ErrorPage';
+import ErrorBoundary from './components/Error Boundry';
 
 const router = createBrowserRouter([
   {
@@ -37,11 +38,17 @@ const router = createBrowserRouter([
       },
       {
         path: 'tools', 
-        element: <ToolsPage />
+        element: 
+          <ErrorBoundary>
+            <ToolsPage />
+          </ErrorBoundary>
       },
       {
         path: 'materials',
-        element: <Materials />
+        element: 
+        <ErrorBoundary>
+          <Materials />
+        </ErrorBoundary>
       },
       {
         path: 'spare-parts',

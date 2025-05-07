@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import logoImage from '../assets/freepik_br_570104c6-d98a-4035-a430-35ecf67600ef.png';
 import CalendarImage from '../assets/Deduru Oya.jpg'
-import { Search, Bell, Package, FileText, Users, Plus, LogOut, Grid, Calendar, ArrowBigRightIcon } from 'lucide-react';
+import { Search, Bell, Package, FileText, Users, Plus, LogOut, Grid, Calendar, ArrowBigRightIcon, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function IrrigationDashboard() {
@@ -93,29 +93,29 @@ export default function IrrigationDashboard() {
             </li>
             <li className="mb-1">
               <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
-              onClick={() => navigate('/suppliers')}>
+              onClick={() => navigate('/officers')}>
                 <Users className="mr-3" size={20} />
+                <span>Officers</span>
+              </div>
+            </li>
+            <li className="mb-1">
+              <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
+              onClick={() => navigate('/suppliers')}>
+                <Shield className="mr-3" size={20} />
                 <span>Suppliers</span>
               </div>
             </li>
           </ul>
         </nav>
 
-        {/* New Item Button */}
-        <div className="px-4 py-4 ml-10">
-          <button className="flex items-center px-4 py-2 bg-blue-400 hover:bg-blue-600 text-black-900 rounded-full"
-          onClick={() => navigate('/new-item')}>
-            <Plus size={18} className="mr-2" />
-            <span>New Item</span>
-          </button>
-        </div>
-
         {/* Calendar Section */}
         <div className="mt-auto p-2">
           <div className="bg-yellow-400 rounded-t-lg p-2">
             <img src={CalendarImage} alt="Calendar Image" className="w-full h-24 object-cover rounded" />
-            <div className="text-center font-bold text-green-800 py-2">January</div>
-            
+            <div className="text-center font-bold text-green-800 py-2">
+              {new Date().toLocaleString('default', { month: 'long' })} {new Date().getFullYear()}
+            </div>
+
             {/* Calendar grid */}
             <div className="grid grid-cols-7 text-xs text-center">
               <div className="py-1">M</div>
@@ -125,13 +125,20 @@ export default function IrrigationDashboard() {
               <div className="py-1">F</div>
               <div className="py-1">S</div>
               <div className="py-1">S</div>
-              
-              {/* Calendar dates - simplified representation */}
-              {Array.from({ length: 31 }).map((_, i) => (
-                <div key={i} className={`py-1 ${i < 5 ? 'text-gray-500' : ''}`}>
-                  {i + 1 <= 31 ? i + 1 : ''}
-                </div>
-              ))}
+
+              {/* Calendar dates */}
+              {Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() }).map((_, i) => {
+                const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay();
+                return (
+                  <div
+                    key={i}
+                    className={`py-1 ${i + 1 === new Date().getDate() ? 'bg-green-600 text-white rounded' : ''}`}
+                    style={{ gridColumnStart: i === 0 ? firstDay + 1 : undefined }}
+                  >
+                    {i + 1}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

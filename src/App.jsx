@@ -14,6 +14,7 @@ import CounterfoilRegisterPage from './components/Counterfoil Register';
 import './index.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-toastify/dist/ReactToastify.css';
+import ErrorBoundary from './components/Error Boundry';
 
 const App = () => (
   <Router>
@@ -29,6 +30,7 @@ const App = () => (
       <Route path="/stationary" element={<StationaryPage />} />
       <Route path="/office-equipments" element={<OfficeEquipments />} />
       <Route path="/counterfoil-register" element={<CounterfoilRegisterPage />} />
+      <Route path="*" element={<ErrorBoundary />} /> {/* Catch-all route for errors */}
       <Route path="/" element={<LoginPage />} /> {/* Default route */}
     </Routes>
   </Router>

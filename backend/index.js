@@ -216,7 +216,7 @@ function authenticateToken(req, res, next) {
 // Tools Endpoints
 // Get all tools
 app.get('/api/tools', authenticateToken, (req, res) => {
-  const query = 'SELECT * FROM tools';
+  const query = 'SELECT TL_ID as tl_id, Name as name, Quantity as quantity, Minimum_Level as minimum_level, Last_Recieved_Date as lastrecieveddate FROM tools';
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ 
@@ -230,42 +230,58 @@ app.get('/api/tools', authenticateToken, (req, res) => {
 
 // Add a new tool
 app.post('/api/tools', authenticateToken, (req, res) => {
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const { tl_id, name, quantity, minimum_level, lastrecieveddate } = req.body;
   
-  if (!name || !quantity) {
+  if (!tl_id || !name || !quantity) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Name and quantity are required' 
+      message: 'Tool ID, Name and quantity are required' 
     });
   }
 
-  const query = 'INSERT INTO tools (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
-  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+  // Handle empty date string
+  const receivedDate = lastrecieveddate && lastrecieveddate !== '' ? 
+                      new Date(lastrecieveddate).toISOString().slice(0, 10) : 
+                      null;
+
+  const query = 'INSERT INTO tools (TL_ID, Name, Quantity, Minimum_Level, Last_Recieved_Date) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [
+    tl_id, 
+    name, 
+    quantity, 
+    minimum_level || 1, 
+    receivedDate
+  ], (err, result) => {
     if (err) {
-      return res.status(500).json({ 
+      console.error('Database error:', err);
+      return result.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message // Return actual database error
       });
     }
     res.json({ 
       success: true, 
       message: 'Tool added successfully',
-      toolId: result.insertId 
+      tl_id: tl_id 
     });
   });
 });
 
 // Update a tool
-app.put('/api/tools/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+app.put('/api/tools/:tl_id', authenticateToken, (req, res) => {
+  const { tl_id } = req.params;
+  const { quantity, lastrecieveddate } = req.body;
 
-  const query = 'UPDATE tools SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE toolId = ?';
-  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+  // Convert empty string to null
+  const receivedDate = lastrecieveddate === '' ? null : lastrecieveddate;
+
+  const query = 'UPDATE tools SET Quantity = ?, Last_Recieved_Date = ? WHERE TL_ID = ?';
+  db.query(query, [quantity, receivedDate, tl_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -282,15 +298,16 @@ app.put('/api/tools/:id', authenticateToken, (req, res) => {
 });
 
 // Delete a tool
-app.delete('/api/tools/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
+app.delete('/api/tools/:tl_id', authenticateToken, (req, res) => {
+  const { tl_id } = req.params;
 
-  const query = 'DELETE FROM tools WHERE toolId = ?';
-  db.query(query, [id], (err, result) => {
+  const query = 'DELETE FROM tools WHERE TL_ID = ?';
+  db.query(query, [tl_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -309,7 +326,7 @@ app.delete('/api/tools/:id', authenticateToken, (req, res) => {
 //Materials Endpoints
 // Get all materials
 app.get('/api/materials', authenticateToken, (req, res) => {
-  const query = 'SELECT * FROM materials';
+  const query = 'SELECT Mat_ID as mat_id, Name as name, Quantity as quantity, Minimum_Level as minimum_level, Last_Recieved_Date as lastrecieveddate FROM material';
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ 
@@ -323,42 +340,58 @@ app.get('/api/materials', authenticateToken, (req, res) => {
 
 // Add a new material
 app.post('/api/materials', authenticateToken, (req, res) => {
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const { mat_id, name, quantity, minimum_level, lastrecieveddate } = req.body;
   
-  if (!name || !quantity) {
+  if (!mat_id || !name || !quantity) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Name and quantity are required' 
+      message: 'Material ID, Name and quantity are required' 
     });
   }
 
-  const query = 'INSERT INTO materials (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
-  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+  // Handle empty date string
+  const receivedDate = lastrecieveddate && lastrecieveddate !== '' ? 
+                      new Date(lastrecieveddate).toISOString().slice(0, 10) : 
+                      null;
+
+  const query = 'INSERT INTO material (Mat_ID, Name, Quantity, Minimum_Level, Last_Recieved_Date) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [
+    mat_id, 
+    name, 
+    quantity, 
+    minimum_level || 1, 
+    receivedDate
+  ], (err, result) => {
     if (err) {
-      return res.status(500).json({ 
+      console.error('Database error:', err);
+      return result.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message // Return actual database error
       });
     }
     res.json({ 
       success: true, 
       message: 'Material added successfully',
-      materialID: result.insertId 
+      mat_id: mat_id 
     });
   });
 });
 
 // Update a material
-app.put('/api/materials/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+app.put('/api/materials/:mat_id', authenticateToken, (req, res) => {
+  const { mat_id } = req.params;
+  const { quantity, lastrecieveddate } = req.body;
 
-  const query = 'UPDATE materials SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE materialId = ?';
-  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+  // Convert empty string to null
+  const receivedDate = lastrecieveddate === '' ? null : lastrecieveddate;
+
+  const query = 'UPDATE material SET Quantity = ?, Last_Recieved_Date = ? WHERE Mat_ID = ?';
+  db.query(query, [quantity, receivedDate, mat_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -375,15 +408,16 @@ app.put('/api/materials/:id', authenticateToken, (req, res) => {
 });
 
 // Delete a material
-app.delete('/api/materials/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
+app.delete('/api/materials/:mat_id', authenticateToken, (req, res) => {
+  const { mat_id } = req.params;
 
-  const query = 'DELETE FROM materials WHERE materialId = ?';
-  db.query(query, [id], (err, result) => {
+  const query = 'DELETE FROM material WHERE Mat_ID = ?';
+  db.query(query, [mat_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -402,7 +436,7 @@ app.delete('/api/materials/:id', authenticateToken, (req, res) => {
 // Spare Parts Endpoints
 // Get all spare parts
 app.get('/api/spare-parts', authenticateToken, (req, res) => {
-  const query = 'SELECT * FROM spare_parts';
+  const query = 'SELECT SP_ID as sp_id, Name as name, Quantity as quantity, Minimum_Level as minimum_level, Last_Recieved_Date as lastrecieveddate FROM spare_parts';
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ 
@@ -416,42 +450,58 @@ app.get('/api/spare-parts', authenticateToken, (req, res) => {
 
 // Add a new spare part
 app.post('/api/spare-parts', authenticateToken, (req, res) => {
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const { sp_id, name, quantity, minimum_level, lastrecieveddate } = req.body;
   
-  if (!name || !quantity) {
+  if (!sp_id || !name || !quantity) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Name and quantity are required' 
+      message: 'Spare Part ID, Name and quantity are required' 
     });
   }
 
-  const query = 'INSERT INTO spare_parts (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
-  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+  // Handle empty date string
+  const receivedDate = lastrecieveddate && lastrecieveddate !== '' ? 
+                      new Date(lastrecieveddate).toISOString().slice(0, 10) : 
+                      null;
+
+  const query = 'INSERT INTO spare_parts (SP_ID, Name, Quantity, Minimum_Level, Last_Recieved_Date) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [
+    sp_id, 
+    name, 
+    quantity, 
+    minimum_level || 1, 
+    receivedDate
+  ], (err, result) => {
     if (err) {
-      return res.status(500).json({ 
+      console.error('Database error:', err);
+      return result.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message // Return actual database error
       });
     }
     res.json({ 
       success: true, 
-      message: 'Added successfully',
-      toolId: result.insertId 
+      message: 'Spare Part added successfully',
+      id: sp_id 
     });
   });
 });
 
 // Update a spare part
-app.put('/api/spare-parts/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+app.put('/api/spare-parts/:sp_id', authenticateToken, (req, res) => {
+  const { sp_id } = req.params;
+  const { quantity, lastrecieveddate } = req.body;
 
-  const query = 'UPDATE spare_parts SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE SP_ID = ?';
-  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+  // Convert empty string to null
+  const receivedDate = lastrecieveddate === '' ? null : lastrecieveddate;
+
+  const query = 'UPDATE spare_parts SET Quantity = ?, Last_Recieved_Date = ? WHERE SP_ID = ?';
+  db.query(query, [quantity, receivedDate, sp_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -462,32 +512,33 @@ app.put('/api/spare-parts/:id', authenticateToken, (req, res) => {
     }
     res.json({ 
       success: true, 
-      message: 'Updated successfully' 
+      message: 'Spare Part updated successfully' 
     });
   });
 });
 
 // Delete a spare part
-app.delete('/api/spare-parts/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
+app.delete('/api/spare-parts/:sp_id', authenticateToken, (req, res) => {
+  const { sp_id } = req.params;
 
   const query = 'DELETE FROM spare_parts WHERE SP_ID = ?';
-  db.query(query, [id], (err, result) => {
+  db.query(query, [sp_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Not found' 
+        message: 'Spare Part not found' 
       });
     }
     res.json({ 
       success: true, 
-      message: 'Deleted successfully' 
+      message: 'Spare Part deleted successfully' 
     });
   });
 });
@@ -495,7 +546,7 @@ app.delete('/api/spare-parts/:id', authenticateToken, (req, res) => {
 // Vehicle and Machines Endpoints
 // Get all vehicles and machines
 app.get('/api/vehicle-and-machines', authenticateToken, (req, res) => {
-  const query = 'SELECT * FROM vehicle_and_machines';
+  const query = 'SELECT VM_ID as vm_id, Name as name, Quantity as quantity, Minimum_Level as minimum_level, Last_Recieved_Date as lastrecieveddate FROM vehicle_and_machines';
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ 
@@ -509,21 +560,33 @@ app.get('/api/vehicle-and-machines', authenticateToken, (req, res) => {
 
 // Add a new vehicle or machine
 app.post('/api/vehicle-and-machines', authenticateToken, (req, res) => {
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const {vm_id, name, quantity, minimum_level, lastrecieveddate } = req.body;
   
-  if (!name || !quantity) {
+  if (!vm_id || !name || !quantity) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Name and quantity are required' 
+      message: 'VM ID, Name and quantity are required' 
     });
   }
 
-  const query = 'INSERT INTO vehicle_and_machine (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
-  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+  // Handle empty date string
+  const receivedDate = lastrecieveddate && lastrecieveddate !== '' ? 
+                      new Date(lastrecieveddate).toISOString().slice(0, 10) : 
+                      null;
+
+  const query = 'INSERT INTO vehicle_and_machine (VM_ID, Name, Quantity, Minimum_Level, Last_Recieved_Date) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [
+    vm_id, 
+    name, 
+    quantity, 
+    minimum_level || 1, 
+    receivedDate
+  ], (err, result) => {
     if (err) {
-      return res.status(500).json({ 
+      console.error('Database error:', err);
+      return result.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message // Return actual database error
       });
     }
     res.json({ 
@@ -536,11 +599,14 @@ app.post('/api/vehicle-and-machines', authenticateToken, (req, res) => {
 
 // Update a vehicle or machine
 app.put('/api/vehicle-and-machine/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const { vm_id } = req.params;
+  const { quantity, lastrecieveddate } = req.body;
 
-  const query = 'UPDATE vehicle_and_machine SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE VM_ID = ?';
-  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+   // Convert empty string to null
+   const receivedDate = lastrecieveddate === '' ? null : lastrecieveddate;
+
+  const query = 'UPDATE vehicle_and_machine SET Quantity = ?, Last_Recieved_Date = ? WHERE VM_ID = ?';
+  db.query(query, [quantity, receivedDate, vm_id], (err, result) => {
     if (err) {
       return res.status(500).json({ 
         success: false, 
@@ -562,10 +628,10 @@ app.put('/api/vehicle-and-machine/:id', authenticateToken, (req, res) => {
 
 // Delete a vehicle or machine
 app.delete('/api/vehicle-and-machine/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
+  const { vm_id } = req.params;
 
   const query = 'DELETE FROM vehicle_and_machine WHERE VM_ID = ?';
-  db.query(query, [id], (err, result) => {
+  db.query(query, [vm_id], (err, result) => {
     if (err) {
       return res.status(500).json({ 
         success: false, 
@@ -681,7 +747,7 @@ app.delete('/api/local-purchasing/:id', authenticateToken, (req, res) => {
 // Stationary Endpoints
 // Get all Stationary items
 app.get('/api/stationary', authenticateToken, (req, res) => {
-  const query = 'SELECT * FROM stationary';
+  const query = 'SELECT ST_ID as st_id, Name as name, Quantity as quantity, Minimum_Level as minimum_level, Last_Recieved_Date as lastrecieveddate FROM stationary';
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ 
@@ -695,78 +761,95 @@ app.get('/api/stationary', authenticateToken, (req, res) => {
 
 // Add a new Stationary item
 app.post('/api/stationary', authenticateToken, (req, res) => {
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const { st_id, name, quantity, minimum_level, lastrecieveddate } = req.body;
   
-  if (!name || !quantity) {
+  if (!st_id || !name || !quantity) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Name and quantity are required' 
+      message: 'Stationary ID, Name and quantity are required' 
     });
   }
 
-  const query = 'INSERT INTO stationary (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
-  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+  // Handle empty date string
+  const receivedDate = lastrecieveddate && lastrecieveddate !== '' ? 
+                      new Date(lastrecieveddate).toISOString().slice(0, 10) : 
+                      null;
+
+  const query = 'INSERT INTO stationary (ST_ID, Name, Quantity, Minimum_Level, Last_Recieved_Date) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [
+    st_id, 
+    name, 
+    quantity, 
+    minimum_level || 1, 
+    receivedDate
+  ], (err, result) => {
     if (err) {
-      return res.status(500).json({ 
+      console.error('Database error:', err);
+      return result.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message // Return actual database error
       });
     }
     res.json({ 
       success: true, 
-      message: 'Added successfully',
-      toolId: result.insertId 
+      message: 'Stationary added successfully',
+      st_id: st_id 
     });
   });
 });
 
 // Update a stationary item
-app.put('/api/stationary/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+app.put('/api/stationary/:st_id', authenticateToken, (req, res) => {
+  const { st_id } = req.params;
+  const { quantity, lastrecieveddate } = req.body;
 
-  const query = 'UPDATE stationary SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE ST_ID = ?';
-  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+  // Convert empty string to null
+  const receivedDate = lastrecieveddate === '' ? null : lastrecieveddate;
+
+  const query = 'UPDATE stationary SET Quantity = ?, Last_Recieved_Date = ? WHERE ST_ID = ?';
+  db.query(query, [quantity, receivedDate, st_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Item not found' 
+        message: 'Stationary not found' 
       });
     }
     res.json({ 
       success: true, 
-      message: 'Updated successfully' 
+      message: 'Stationary updated successfully' 
     });
   });
 });
 
 // Delete a stationary item
-app.delete('/api/stationary/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
+app.delete('/api/stationary/:st_id', authenticateToken, (req, res) => {
+  const { st_id } = req.params;
 
   const query = 'DELETE FROM stationary WHERE ST_ID = ?';
-  db.query(query, [id], (err, result) => {
+  db.query(query, [st_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Not found' 
+        message: 'Stationary not found' 
       });
     }
     res.json({ 
       success: true, 
-      message: 'Deleted successfully' 
+      message: 'Stationary deleted successfully' 
     });
   });
 });
