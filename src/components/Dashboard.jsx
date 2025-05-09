@@ -93,20 +93,23 @@ export default function IrrigationDashboard() {
             </li>
             <li className="mb-1">
               <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
-              onClick={() => navigate('/officers')}>
-                <Users className="mr-3" size={20} />
-                <span>Officers</span>
-              </div>
-            </li>
-            <li className="mb-1">
-              <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
               onClick={() => navigate('/suppliers')}>
-                <Shield className="mr-3" size={20} />
+                <Users className="mr-3" size={20} />
                 <span>Suppliers</span>
               </div>
             </li>
           </ul>
         </nav>
+
+        <div className='flex items-center justify-center'>
+          <button>
+            <div className="bg-blue-600 flex items-center px-4 py-3 hover:bg-blue-400 text-black rounded-lg mx-2"
+            onClick={() => navigate('/add-new-item')}>
+              <Plus className="mr-3" size={20} />
+              <span>Add New Item</span>
+            </div>
+          </button>
+        </div>
 
         {/* Calendar Section */}
         <div className="mt-auto p-2">
@@ -209,78 +212,27 @@ export default function IrrigationDashboard() {
             </div>
           </div>
 
-          {/* Category Grid */}
-          <div className="grid grid-cols-4 gap-4">
+          {/* Grid */}
+          <div className="grid grid-cols-2 gap-6 mt-6">
             {/* Row 1 */}
-            <div className="bg-lime-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/tools')}>
-              <h2 className="text-2xl font-bold text-white">Tools</h2>
+            <div className="bg-lime-900 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
+                onClick={() => navigate('/store-items')}>
+              <h2 className="text-4xl font-bold text-white">Store Items</h2>
             </div>
-            <div className="bg-green-700 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/materials')}>
-              <h2 className="text-2xl font-bold text-white">Materials</h2>
+            <div className="bg-emerald-900 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
+                onClick={() => navigate('/officer-details')}>
+              <h2 className="text-4xl font-bold text-white">Officers' Details</h2>
             </div>
-            <div className="bg-emerald-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/blasting-materials')}>
-              <h2 className="text-2xl font-bold text-white text-center">Blasting Materials</h2>
-            </div>
-            <div className="bg-cyan-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
-                onClick={() => navigate('/office-furniture')}>
-              <h2 className="text-2xl font-bold text-white text-center">Office Furniture</h2>
-            </div>
-
+          </div>
+          <div className="grid grid-cols-2 gap-6 mt-6">
             {/* Row 2 */}
-            <div className="bg-lime-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/spare-parts')}>
-              <h2 className="text-2xl font-bold text-white">Spare Parts</h2>
+            <div className="bg-cyan-900 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
+                onClick={() => navigate('/filling-stations')}>
+              <h2 className="text-4xl font-bold text-white">Filling Stations</h2>
             </div>
-            <div className="bg-green-700 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/stationary')}>
-              <h2 className="text-2xl font-bold text-white">Stationary</h2>
-            </div>
-            <div className="bg-emerald-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/fuel-and-lubricants')}>
-              <h2 className="text-2xl font-bold text-white text-center">Fuel & Lubricants</h2>
-            </div>
-            <div className="bg-cyan-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
-                onClick={() => navigate('/survey-and-drawing-instruments')}>
-              <h2 className="text-2xl font-bold text-white text-center">Survey & Drawing Instruments</h2>
-            </div>
-
-            {/* Row 3 */}
-            <div className="bg-lime-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/vehicle-and-machines')}>
-              <h2 className="text-2xl font-bold text-white text-center">Vehicle & Machines</h2>
-            </div>
-            <div className="bg-green-700 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/office-equipments')}>
-              <h2 className="text-2xl font-bold text-white text-center">Office Equipments</h2>
-            </div>
-            <div className="bg-emerald-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/used-tools')}>
-              <h2 className="text-2xl font-bold text-white">Used Tools</h2>
-            </div>
-            <div className="bg-cyan-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
-                onClick={() => navigate('/salvage-items')}>
-              <h2 className="text-2xl font-bold text-white">Salvage Items</h2>
-            </div>
-
-            {/* Row 4 */}
-            <div className="bg-lime-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/local-purchasing')}>
-              <h2 className="text-2xl font-bold text-white text-center">Local Purchasing</h2>
-            </div>
-            <div className="bg-green-700 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/counterfoil-register')}>
-              <h2 className="text-2xl font-bold text-white text-center">Counterfoil Register</h2>
-            </div>
-            <div className="bg-emerald-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/publications')}>
-              <h2 className="text-2xl font-bold text-white">Publications</h2>
-            </div>
-            <div className="bg-cyan-900 rounded-lg p-8 flex items-center justify-center cursor-pointer hover:bg-cyan-700 transition-colors"
-                onClick={() => navigate('/welfare-articles')}>
-              <h2 className="text-2xl font-bold text-white">Welfare Articles</h2>
+            <div className="bg-green-700 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
+                onClick={() => navigate('/transaction-details')}>
+              <h2 className="text-4xl font-bold text-white">Transaction Details</h2>
             </div>
           </div>
         </div>
