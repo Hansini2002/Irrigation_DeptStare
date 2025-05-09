@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import logoImage from '../assets/freepik_br_570104c6-d98a-4035-a430-35ecf67600ef.png';
 import { Edit, Trash} from 'react-feather';
-import { Package, FileText, Users, Plus, LogOut, Grid, Shield } from 'lucide-react';
+import { Package, FileText, Users, Plus, LogOut, Grid, Shield, Contact } from 'lucide-react';
 import CalendarImage from '../assets/Deduru Oya.jpg';
 import { useNavigate } from 'react-router-dom';
 
-export default function ToolsPage() {
+export default function Officers() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [tools, setTools] = useState([]);
+    const [officers, setOfficers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
-    const [newTool, setNewTool] = useState({
-        tl_id: '',
-        name: '',
-        quantity: '',
-        minimum_level: '',
-        lastrecieveddate: ''
+    const [newOfficer, setNewOfficer] = useState({
+        officer_id: '',
+        officer_name: '',
+        designation: '',
+        gender: '',
+        started_date: '',
+        end_date: '',
+        city: '',
+        Contact: ''
     });
 
-    const fetchTools = async () => {
+    const fetchOfficers = async () => {
         try {
           setLoading(true);
           const token = localStorage.getItem('token');
@@ -29,7 +32,7 @@ export default function ToolsPage() {
             return;
           }
     
-          const response = await fetch('http://localhost:5000/api/tools', {
+          const response = await fetch('http://localhost:5000/api/officers', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
     
@@ -45,80 +48,86 @@ export default function ToolsPage() {
     
           const data = await response.json();
           if (response.ok) {
-            setTools(data);
+            setOfficers(data);
         } else {
-            throw new Error(data.message || 'Failed to fetch tools');
+            throw new Error(data.message || 'Failed to fetch Officers');
         }
           if (!Array.isArray(data)) {
             throw new Error('Invalid data format received');
           }
     
-          setTools(data);
+          setOfficers(data);
           setError(null);
         } catch (err) {
-          console.error('Fetch tools error:', err);
+          console.error('Fetch Officers error:', err);
           setError(err.message);
-          setTools([]);
+          setOfficers([]);
         } finally {
           setLoading(false);
         }
       };
 
-    const handleAddTool = () => {
+    const handleAddOfficers = () => {
         const token = localStorage.getItem('token');
         
         // Validate required fields
-        if (!newTool.tl_id || !newTool.name || !newTool.quantity) {
-            alert('TL_ID, Name, and Quantity are required fields');
+        if (!newOfficer.officer_id || !newOfficer.officer_name || !newOfficer.designation || !newOfficer.gender || !newOfficer.started_date || !newOfficer.city) {
+            alert('Officer Id, Name, Designation, Gender, Started Date and City are required fields');
             return;
         }
     
         // Prepare the data to send
-        const toolData = {
-            tl_id: newTool.tl_id,
-            name: newTool.name,
-            quantity: parseInt(newTool.quantity),
-            minimum_level: parseInt(newTool.minimum_level) || 1, // Default to 1 if not provided
-            lastrecieveddate: newTool.lastrecieveddate || null // Change from current date to null
+        const OfficersData = {
+            officer_id: newOfficer.officer_id,
+            officer_name: newOfficer.officer_name,
+            designation: newOfficer.designation,
+            gender: newOfficer.gender,
+            started_date: newOfficer.started_date || null, // Change from current date to null
+            end_date: newOfficer.end_date || null, // Change from current date to null
+            city: newOfficer.city,
+            Contact: newOfficer.Contact
         };
     
-        fetch('http://localhost:5000/api/tools', {
+        fetch('http://localhost:5000/api/officers', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(toolData)
+            body: JSON.stringify(OfficersData)
         })
         .then(async (response) => {
             if (!response.ok) {
                 const err = await response.json();
-                throw new Error(err.message || 'Failed to add the tool');
+                throw new Error(err.message || 'Failed to add the Officer');
             }
             return response.json();
         })
         .then((data) => {
             if (data.success) {
-                fetchTools(); // Refresh the tools list
+                fetchOfficers(); // Refresh the Officers list
                 setIsAdding(false);
-                setNewTool({
-                    tl_id: '',
-                    name: '',
-                    quantity:'',
-                    minimum_level: '',
-                    lastrecieveddate: ''
+                setNewOfficer({
+                    officer_id: '',
+                    officer_name: '',
+                    designation: '',
+                    gender: '',
+                    started_date: '',
+                    end_date: '',
+                    city: '',
+                    Contact: ''
                 });
             }
         })
         .catch((error) => {
-            console.error('Error adding the tool:', error);
-            alert(error.message || 'Error adding tool');
+            console.error('Error adding the Officer:', error);
+            alert(error.message || 'Error adding Officer');
         });
     };
 
-    const handleEdit = (tl_id, updatedFields) => {
+    const handleEdit = (officer_id, updatedFields) => {
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:5000/api/tools/${tl_id}`, {
+        fetch(`http://localhost:5000/api/officers/${officer_id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -129,32 +138,32 @@ export default function ToolsPage() {
         .then(async (response) => {
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to update tool');
+                throw new Error(data.message || 'Failed to update Officer');
             }
-            fetchTools(); // Refresh the list
+            fetchOfficers(); // Refresh the list
             return data;
         })
         .catch((error) => {
-            console.error('Error updating tool:', error);
-            alert(error.message || 'Error updating tool. Please try again later.');
+            console.error('Error updating Officer:', error);
+            alert(error.message || 'Error updating Officer. Please try again later.');
         });
     };
 
-    const handleDelete = (tl_id) => {
+    const handleDelete = (officer_id) => {
         const token = localStorage.getItem('token');
-        fetch(`http://localhost:5000/api/tools/${tl_id}`, {
+        fetch(`http://localhost:5000/api/officers/${officer_id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         })
             .then((response) => {
-                if (!response.ok) throw new Error('Failed to delete tool');
-                setTools(tools.filter((tool) => tool.tl_id !== tl_id));
+                if (!response.ok) throw new Error('Failed to delete Officer');
+                setOfficers(officers.filter((officer) => officer.officer_id !== officer_id));
             })
             .catch((error) => {
-                console.error('Error deleting tool:', error);
-                alert('Error deleting tool. Please try again later.');
+                console.error('Error deleting Officer:', error);
+                alert('Error deleting Officer. Please try again later.');
             });
     };
 
@@ -166,16 +175,16 @@ export default function ToolsPage() {
       };
 
     useEffect(() => {
-        fetchTools();
+        fetchOfficers();
     }, []);
 
-    const filteredTools = tools.filter(tool => 
-        (tool?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) || 
-        tool?.tl_id?.toString()?.includes(searchTerm)) ?? []
+    const filteredOfficers = officers.filter(officer => 
+        (officer?.officer_name?.toLowerCase()?.includes(searchTerm.toLowerCase()) || 
+        officer?.officer_id?.toString()?.includes(searchTerm)) ?? []
     );
 
     if (loading) {
-        return <div>Loading tools...</div>;
+        return <div>Loading...</div>;
     }
     
     if (error) {
@@ -222,7 +231,7 @@ export default function ToolsPage() {
                             </div>
                         </li>
                         <li className="mb-1">
-                            <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
+                            <div className="flex items-center px-4 py-3 bg-blue-400 text-black-900 rounded-lg mx-2"
                             onClick={() => navigate('/officers')}>
                                 <Users className="mr-3" size={20} />
                                 <span>Officers</span>
@@ -285,77 +294,107 @@ export default function ToolsPage() {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col bg-white rounded-l-lg p-4">
-                <div className="tools-page">
+                <div className="Officers-page">
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold">Tools</h1>
+                        <h1 className="text-2xl font-bold">Officers</h1>
                         <div>
                         <button 
                                 className="bg-yellow-500 text-black px-4 py-2 rounded flex items-center"
                                 onClick={() => setIsAdding(!isAdding)}
                             >
                                 <Plus className="mr-1" size={16} />
-                                {isAdding ? 'Cancel' : 'Add Tool'}
+                                {isAdding ? 'Cancel' : 'Add Officer'}
                             </button>
                         </div>
                     </div>
 
                     {isAdding && (
                         <div className="mb-4 p-4 border border-gray-300 rounded">
-                            <h2 className="text-lg font-semibold mb-3">Add New Tool</h2>
+                            <h2 className="text-lg font-semibold mb-3">Add New Officer</h2>
                             <div className="grid grid-cols-2 gap-4 mb-3">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">TL_ID</label>
+                                    <label className="block text-sm font-medium mb-1">Officer ID</label>
                                     <input
                                         type="text"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.tl_id}
-                                        onChange={(e) => setNewTool({...newTool, tl_id: e.target.value})}
+                                        value={newOfficer.officer_id}
+                                        onChange={(e) => setNewOfficer({...newOfficer, officer_id: e.target.value})}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Tool Name</label>
+                                    <label className="block text-sm font-medium mb-1">Officer Name</label>
                                     <input
                                         type="text"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.name}
-                                        onChange={(e) => setNewTool({...newTool, name: e.target.value})}
+                                        value={newOfficer.officer_name}
+                                        onChange={(e) => setNewOfficer({...newOfficer, officer_name: e.target.value})}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Quantity</label>
+                                    <label className="block text-sm font-medium mb-1">Designation</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.quantity}
-                                        onChange={(e) => setNewTool({...newTool, quantity: e.target.value})}
+                                        value={newOfficer.designation}
+                                        onChange={(e) => setNewOfficer({...newOfficer, designation: e.target.value})}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Minimum Level</label>
+                                    <label className="block text-sm font-medium mb-1">Gender</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.minimum_level}
-                                        onChange={(e) => setNewTool({...newTool, minimum_level: e.target.value})}
+                                        value={newOfficer.gender}
+                                        onChange={(e) => setNewOfficer({...newOfficer, gender: e.target.value})}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Last Received Date</label>
+                                    <label className="block text-sm font-medium mb-1">Started Date</label>
                                     <input
                                         type="date"
                                         className="w-full p-2 border border-gray-300 rounded"
-                                        value={newTool.lastrecieveddate || ''}
+                                        value={newOfficer.started_date || ''}
                                         onChange={(e) => {
                                             const dateValue = e.target.value;
-                                            setNewTool({...newTool, lastrecieveddate: dateValue});
+                                            setNewOfficer({...newOfficer, started_date: dateValue});
                                         }}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">End Date</label>
+                                    <input
+                                        type="date"
+                                        className="w-full p-2 border border-gray-300 rounded"
+                                        value={newOfficer.end_date || ''}
+                                        onChange={(e) => {
+                                            const dateValue = e.target.value;
+                                            setNewOfficer({...newOfficer, end_date: dateValue});
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">City</label>
+                                    <input
+                                        type="text"
+                                        className="w-full p-2 border border-gray-300 rounded"
+                                        value={newOfficer.city}
+                                        onChange={(e) => setNewOfficer({...newOfficer, city: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Contact No.</label>
+                                    <input
+                                        type="number"
+                                        className="w-full p-2 border border-gray-300 rounded"
+                                        value={newOfficer.Contact}
+                                        onChange={(e) => setNewOfficer({...newOfficer, Contact: e.target.value})}
                                     />
                                 </div>
                             </div>
                             <button
                                 className="bg-green-500 text-white px-4 py-2 rounded"
-                                onClick={handleAddTool}>
-                                Save Tool
+                                onClick={handleAddOfficers}>
+                                Save Officer
                             </button>
                         </div>
                     )}
@@ -364,7 +403,7 @@ export default function ToolsPage() {
                         <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded"
-                            placeholder="Search tools..."
+                            placeholder="Search Officer..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -374,27 +413,31 @@ export default function ToolsPage() {
                         <table className="w-full border-collapse">
                             <thead className="bg-gray-100">
                                 <tr>
-                                    <th className="border border-gray-300 p-2 text-left">TL ID</th>
-                                    <th className="border border-gray-300 p-2 text-left">Name</th>
-                                    <th className="border border-gray-300 p-2 text-left">Quantity</th>
-                                    <th className="border border-gray-300 p-2 text-left">Last Received Date</th>
+                                    <th className="border border-gray-300 p-2 text-left">Officer ID</th>
+                                    <th className="border border-gray-300 p-2 text-left">Officer Name</th>
+                                    <th className="border border-gray-300 p-2 text-left">Designation</th>
+                                    <th className="border border-gray-300 p-2 text-left">Gender</th>
+                                    <th className="border border-gray-300 p-2 text-left">Started Date</th>
+                                    <th className="border border-gray-300 p-2 text-left">End Date</th>
+                                    <th className="border border-gray-300 p-2 text-left">City</th>
+                                    <th className="border border-gray-300 p-2 text-left">Contact No.</th>
                                     <th className="border border-gray-300 p-2 text-left">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                            {filteredTools.length > 0 ? (
-                                    filteredTools.map((tool) => (
-                                        <ToolRow 
-                                            key={tool.tl_id} 
-                                            tool={tool} 
+                            {filteredOfficers.length > 0 ? (
+                                    filteredOfficers.map((officer) => (
+                                        <OfficersRow 
+                                            key={officer.officer_id} 
+                                            officer={officer} 
                                             onEdit={handleEdit} 
                                             onDelete={handleDelete} 
                                         />
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="border border-gray-300 p-2 text-center">
-                                            {tools.length === 0 ? 'No tools available' : 'No matching tool found'}
+                                        <td colSpan="9" className="border border-gray-300 p-2 text-center">
+                                            {officers.length === 0 ? 'No Officers available' : 'No matching Officer found'}
                                         </td>
                                     </tr>
                                 )}
@@ -407,50 +450,82 @@ export default function ToolsPage() {
     );
 }
 
-function ToolRow({ tool, onEdit, onDelete }) {
+function OfficersRow({ officer, onEdit, onDelete }) {
     const [isEditing, setIsEditing] = useState(false);
-    const [editedTool, setEditedTool] = useState({
-        quantity: tool?.quantity || 0,
-        lastrecieveddate: tool?.lastrecieveddate || new Date().toISOString().split('T')[0]
+    const [editedOfficers, setEditedOfficers] = useState({
+        designation: officer?.designation,
+        end_date: officer?.end_date || new Date().toISOString().split('T')[0],
+        city: officer?.city,
+        Contact: officer?.Contact // Assuming Contact is not editable here
     });
 
     const handleSave = () => {
         // Prepare update data with proper null handling
         const updateData = {
-            quantity: editedTool.quantity,
-            lastrecieveddate: editedTool.lastrecieveddate === '' ? null : editedTool.lastrecieveddate
+            designation: editedOfficers.designation,
+            end_date: editedOfficers.end_date === '' ? null : editedOfficers.end_date,
+            city: editedOfficers.city,
+            Contact: officer.Contact // Assuming Contact is not editable here
         };
         
-        onEdit(tool.tl_id, updateData);
+        onEdit(officer.officer_id, updateData);
         setIsEditing(false);
     };
 
     return (
         <tr className="hover:bg-gray-50">
-            <td className="border border-gray-300 p-2">{tool.tl_id}</td>
-            <td className="border border-gray-300 p-2">{tool.name}</td>
+            <td className="border border-gray-300 p-2">{officer.officer_id}</td>
+            <td className="border border-gray-300 p-2">{officer.officer_name}</td>
             <td className="border border-gray-300 p-2">
                 {isEditing ? (
                     <input
-                        type="number"
+                        type="text"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedTool.quantity}
-                        onChange={(e) => setEditedTool({ ...editedTool, quantity: e.target.value })}
+                        value={editedOfficers.designation}
+                        onChange={(e) => setEditedOfficers({ ...editedOfficers, designation: e.target.value })}
                     />
                 ) : (
-                    tool.quantity
+                    officer.designation
                 )}
+            </td>
+            <td className="border border-gray-300 p-2">{officer.gender}</td>
+            <td className="border border-gray-300 p-2">
+                {officer.started_date ? new Date(officer.started_date).toLocaleDateString() : 'N/A'}
             </td>
             <td className="border border-gray-300 p-2">
                 {isEditing ? (
                     <input
                         type="date"
                         className="w-full p-1 border border-gray-300 rounded"
-                        value={editedTool.lastrecieveddate}
-                        onChange={(e) => setEditedTool({ ...editedTool, lastrecieveddate: e.target.value })}
+                        value={editedOfficers.end_date}
+                        onChange={(e) => setEditedOfficers({ ...editedOfficers, end_date: e.target.value })}
                     />
                 ) : (
-                    tool.lastrecieveddate ? new Date(tool.lastrecieveddate).toLocaleDateString() : 'N/A'
+                    officer.end_date ? new Date(officer.end_date).toLocaleDateString() : 'N/A'
+                )}
+            </td>
+            <td className="border border-gray-300 p-2">
+                {isEditing ? (
+                    <input
+                        type="text"
+                        className="w-full p-1 border border-gray-300 rounded"
+                        value={editedOfficers.city}
+                        onChange={(e) => setEditedOfficers({ ...editedOfficers, city: e.target.value })}
+                    />
+                ) : (
+                    officer.city
+                )}
+            </td>
+            <td className="border border-gray-300 p-2">
+                {isEditing ? (
+                    <input
+                        type="number"
+                        className="w-full p-1 border border-gray-300 rounded"
+                        value={editedOfficers.Contact}
+                        onChange={(e) => setEditedOfficers({ ...editedOfficers, Contact: e.target.value })}
+                    />
+                ) : (
+                    officer.Contact
                 )}
             </td>
             <td className="border border-gray-300 p-2">
@@ -480,7 +555,7 @@ function ToolRow({ tool, onEdit, onDelete }) {
                         </button>
                         <button
                             className="bg-red-500 text-white px-2 py-1 rounded flex items-center"
-                            onClick={() => onDelete(tool.tl_id)}
+                            onClick={() => onDelete(officer.officer_id)}
                         >
                             <Trash size={16} className="mr-1" />
                             Delete

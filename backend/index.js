@@ -654,7 +654,7 @@ app.delete('/api/vehicle-and-machine/:id', authenticateToken, (req, res) => {
 // Local Purchasing Endpoints
 // Get all local purchasing items
 app.get('/api/local-purchasing', authenticateToken, (req, res) => {
-  const query = 'SELECT * FROM local_purchasing';
+  const query = 'SELECT LP_ID as lp_id, Name as name, Quantity as quantity, Minimum_Level as minimum_level, Last_Recieved_Date as lastrecieveddate FROM local_purchasing';
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ 
@@ -668,42 +668,55 @@ app.get('/api/local-purchasing', authenticateToken, (req, res) => {
 
 // Add a new local purchasing item
 app.post('/api/local-purchasing', authenticateToken, (req, res) => {
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const {lp_id, name, quantity, minimum_level, lastrecieveddate } = req.body;
   
-  if (!name || !quantity) {
+  if (!lp_id || !name || !quantity) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Name and quantity are required' 
+      message: 'LP Id, Name and quantity are required' 
     });
   }
 
-  const query = 'INSERT INTO local_purchasing (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
-  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+  // Handle empty date string
+  const receivedDate = lastrecieveddate && lastrecieveddate !== '' ? 
+                      new Date(lastrecieveddate).toISOString().slice(0, 10) : 
+                      null;
+
+  const query = 'INSERT INTO local_purchasing (LP_ID, Name, Quantity, Minimum_Level, Last_Recieved_Date) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [
+    lp_id, 
+    name, 
+    quantity, 
+    minimum_level || 1, 
+    receivedDate
+  ], (err, result) => {
     if (err) {
-      return res.status(500).json({ 
+      console.error('Database error:', err);
+      return result.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message // Return actual database error
       });
     }
     res.json({ 
       success: true, 
       message: 'Added successfully',
-      toolId: result.insertId 
+      lp_id: lp_id
     });
   });
 });
 
 // Update a local purchasing item
 app.put('/api/local-purchasing/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const { lp_id } = req.params;
+  const { quantity, lastrecieveddate } = req.body;
 
-  const query = 'UPDATE local_purchasing SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE LP_ID = ?';
-  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+  const query = 'UPDATE local_purchasing SET Quantity = ?, Last_Recieved_Date = ? WHERE LP_ID = ?';
+  db.query(query, [quantity, lastrecieveddate, lp_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -721,14 +734,15 @@ app.put('/api/local-purchasing/:id', authenticateToken, (req, res) => {
 
 // Delete a local purchasing item
 app.delete('/api/local-purchasing/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
+  const { lp_id } = req.params;
 
   const query = 'DELETE FROM local_purchasing WHERE LP_ID = ?';
-  db.query(query, [id], (err, result) => {
+  db.query(query, [lp_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -857,7 +871,7 @@ app.delete('/api/stationary/:st_id', authenticateToken, (req, res) => {
 // Office Equipments Endpoints
 // Get all office equipment items
 app.get('/api/office-equipments', authenticateToken, (req, res) => {
-  const query = 'SELECT * FROM office_equipments';
+  const query = 'SELECT OE_ID as oe_id, Name as name, Quantity as quantity, Minimum_Level as minimum_level, Last_Recieved_Date as lastrecieveddate FROM office_equipments';
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ 
@@ -871,42 +885,58 @@ app.get('/api/office-equipments', authenticateToken, (req, res) => {
 
 // Add a new office equipment item
 app.post('/api/office-equipments', authenticateToken, (req, res) => {
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+  const {oe_id,  name, quantity, minimum_level, lastrecieveddate } = req.body;
   
-  if (!name || !quantity) {
+  if (!oe_id || !name || !quantity) {
     return res.status(400).json({ 
       success: false, 
       message: 'Name and quantity are required' 
     });
   }
 
-  const query = 'INSERT INTO office_equipments (name, quantity, minimum_level, lastrecieveddate) VALUES (?, ?, ?, ?)';
-  db.query(query, [name, quantity, minimum_level || 1, lastrecieveddate || new Date()], (err, result) => {
+  // Handle empty date string
+  const receivedDate = lastrecieveddate && lastrecieveddate !== '' ? 
+                      new Date(lastrecieveddate).toISOString().slice(0, 10) : 
+                      null;
+
+  const query = 'INSERT INTO stationary (ST_ID, Name, Quantity, Minimum_Level, Last_Recieved_Date) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [
+    oe_id, 
+    name, 
+    quantity, 
+    minimum_level || 1, 
+    receivedDate
+  ], (err, result) => {
     if (err) {
-      return res.status(500).json({ 
+      console.error('Database error:', err);
+      return result.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message // Return actual database error
       });
     }
     res.json({ 
       success: true, 
       message: 'Added successfully',
-      toolId: result.insertId 
+      oe_id: oe_id
     });
   });
 });
 
 // Update a office equipment item
-app.put('/api/office_equipments/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  const { name, quantity, minimum_level, lastrecieveddate } = req.body;
+app.put('/api/office_equipments/:oe_id', authenticateToken, (req, res) => {
+  const { oe_id } = req.params;
+  const { quantity, lastrecieveddate } = req.body;
 
-  const query = 'UPDATE office_equipments SET name = ?, quantity = ?, minimum_level = ?, lastrecieveddate = ? WHERE OE_ID = ?';
-  db.query(query, [name, quantity, minimum_level, lastrecieveddate, id], (err, result) => {
+  // Convert empty string to null
+  const receivedDate = lastrecieveddate === '' ? null : lastrecieveddate;
+
+  const query = 'UPDATE office_equipments SET Quantity = ?, Last_Recieved_Date = ? WHERE OE_ID = ?';
+  db.query(query, [quantity, receivedDate, oe_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -923,15 +953,16 @@ app.put('/api/office_equipments/:id', authenticateToken, (req, res) => {
 });
 
 // Delete a office equipment item
-app.delete('/api/office_equipments/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
+app.delete('/api/office_equipments/:oe_id', authenticateToken, (req, res) => {
+  const { oe_id } = req.params;
 
   const query = 'DELETE FROM office_equipments WHERE OE_ID = ?';
-  db.query(query, [id], (err, result) => {
+  db.query(query, [oe_id], (err, result) => {
     if (err) {
+      console.error('Database error:', err);
       return res.status(500).json({ 
         success: false, 
-        message: 'Database error' 
+        message: err.message 
       });
     }
     if (result.affectedRows === 0) {
@@ -1036,6 +1067,219 @@ app.delete('/api/counterfoil-register/:id', authenticateToken, (req, res) => {
     res.json({ 
       success: true, 
       message: 'Deleted successfully' 
+    });
+  });
+});
+
+// Officers Endpoints
+// Get all officers
+app.get('/api/officers', authenticateToken, (req, res) => {
+  const query = 'SELECT Officer_ID as officer_id, Officer_Name as officer_name, Designation as designation, Gender as gender, Started_Date as started_date, End_Date as end_date, City as city, Contact_No as Contact FROM officers';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json(results);
+  });
+});
+
+// Add a new officer
+app.post('/api/officers', authenticateToken, (req, res) => {
+  const { officer_id, officer_name, designation, gender, started_date, end_date, city, Contact } = req.body;
+
+  if (!officer_id || !officer_name || !designation || !gender || !started_date || !city) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Officer Id, Name, Designation, Gender, Started Date and City are required fields' 
+    });
+  }
+
+  // Handle empty date string and normalize to date-only format
+  const startDate = started_date && started_date !== '' ? 
+                    new Date(started_date).toISOString().slice(0, 10) : 
+                    null;
+  const endDate = end_date && end_date !== '' ? 
+                    new Date(end_date).toISOString().slice(0, 10) : 
+                    null;
+                
+  const query = 'INSERT INTO officers (Officer_ID, Officer_Name, Designation, Gender, Started_Date, End_Date, City, Contact_No) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+  db.query(query, [
+    officer_id, 
+    officer_name, 
+    designation,
+    gender,
+    startDate,
+    endDate,
+    city,
+    Contact
+  ], (err) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ 
+        success: false, 
+        message: err.message // Return actual database error
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Officer added successfully',
+      officer_id: officer_id 
+    });
+  });
+});
+
+// Update an officer
+app.put('/api/officers/:officer_id', authenticateToken, (req, res) => {
+  const { officer_id } = req.params;
+  const { designation, end_date, city, Contact } = req.body;
+
+  // Handle empty date string to null
+  const endDate = end_date && end_date !== '' ? 
+                  new Date(end_date).toISOString().slice(0, 10) : 
+                  null;
+  const query = 'UPDATE officers SET Designation = ?, End_Date = ?, City = ?, Contact_No = ? WHERE Officer_ID = ?';
+  db.query(query, [designation, endDate, city, Contact, officer_id], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ 
+        success: false, 
+        message: err.message 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Officer not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Officer updated successfully' 
+    });
+  });
+});
+
+// Delete an officer
+app.delete('/api/officers/:officer_id', authenticateToken, (req, res) => {
+  const { officer_id } = req.params;
+
+  const query = 'DELETE FROM officers WHERE Officer_ID = ?';
+  db.query(query, [officer_id], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ 
+        success: false, 
+        message: err.message 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Officer not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Officer deleted successfully' 
+    });
+  });
+});
+
+// Suppliers Endpoints
+// Get all suppliers
+app.get('/api/suppliers', authenticateToken, (req, res) => {
+  const query = 'SELECT Supplier_ID as sup_id, Supplier_Name as sup_name, Location as location, Contact_No as contact FROM suppliers';
+  db.query(query, (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+    res.json(results);
+  });
+});
+
+// Add a new supplier
+app.post('/api/suppliers', authenticateToken, (req, res) => {
+  const { sup_id, sup_name, location, contact } = req.body;
+  
+  if (!sup_id || !sup_name || !location || !contact) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'All fields are required' 
+    });
+  }
+
+  const query = 'INSERT INTO suppliers (Supplier_ID, Supplier_Name, Location, Contact_No) VALUES (?, ?, ?, ?)';
+  db.query(query, [sup_id, sup_name, location, contact], (err) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ 
+        success: false, 
+        message: err.message // Return actual database error
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Supplier added successfully',
+      sup_id: sup_id 
+    });
+  });
+});
+
+// Update a supplier
+app.put('/api/suppliers/:sup_id', authenticateToken, (req, res) => {
+  const { sup_id } = req.params;
+  const { location, contact } = req.body;
+
+  const query = 'UPDATE suppliers SET  Location = ?, Contact_No = ? WHERE Supplier_ID = ?';
+  db.query(query, [location, contact, sup_id], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ 
+        success: false, 
+        message: err.message 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Supplier not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Supplier updated successfully' 
+    });
+  });
+});
+
+// Delete a supplier
+app.delete('/api/suppliers/:sup_id', authenticateToken, (req, res) => {
+  const { sup_id } = req.params;
+
+  const query = 'DELETE FROM suppliers WHERE Supplier_ID = ?';
+  db.query(query, [sup_id], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ 
+        success: false, 
+        message: err.message 
+      });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Supplier not found' 
+      });
+    }
+    res.json({ 
+      success: true, 
+      message: 'Supplier deleted successfully' 
     });
   });
 });

@@ -163,7 +163,7 @@ export default function IrrigationDashboard() {
               <Search className="absolute left-3 top-2.5 text-gray-500" size={20} />
               <input
                 type="text"
-                placeholder="Search for stocks and more"
+                placeholder="Search for stock items and more"
                 className="w-full bg-gray-200 py-2 pl-10 pr-4 rounded-lg"
               />
             </div>

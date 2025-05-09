@@ -11,6 +11,8 @@ import LocalPurchasing from './components/Local Purchasing';
 import StationaryPage from './components/Stationary';
 import OfficeEquipments from './components/Office Equipments';
 import CounterfoilRegisterPage from './components/Counterfoil Register';
+import Officers from './components/Officers';
+import Suppliers from './components/Suppliers';
 import './index.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -30,6 +32,8 @@ const App = () => (
       <Route path="/stationary" element={<StationaryPage />} />
       <Route path="/office-equipments" element={<OfficeEquipments />} />
       <Route path="/counterfoil-register" element={<CounterfoilRegisterPage />} />
+      <Route path="/officers" element={<Officers />} />
+      <Route path="/suppliers" element={<Suppliers />} />
       <Route path="*" element={<ErrorBoundary />} /> {/* Catch-all route for errors */}
       <Route path="/" element={<LoginPage />} /> {/* Default route */}
     </Routes>

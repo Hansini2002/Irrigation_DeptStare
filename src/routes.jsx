@@ -11,6 +11,8 @@ import LocalPurchasing from './components/Local Purchasing';
 import StationaryPage from './components/Stationary';
 import OfficeEquipments from './components/Office Equipments';
 import CounterfoilRegisterPage from './components/Counterfoil Register';
+import Officers from './components/Officers';
+import Suppliers from './components/Suppliers';
 import ErrorPage from './components/ErrorPage';
 import ErrorBoundary from './components/Error Boundry';
 
@@ -73,6 +75,14 @@ const router = createBrowserRouter([
       {
         path: 'counterfoil-register',
         element: <CounterfoilRegisterPage />
+      },
+      {
+        path: 'officers',
+        element: <Officers />
+      },
+      {
+        path: 'suppliers',
+        element: <Suppliers />
       }
       
     ]
