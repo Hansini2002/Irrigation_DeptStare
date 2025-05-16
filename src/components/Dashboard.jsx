@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import logoImage from '../assets/freepik_br_570104c6-d98a-4035-a430-35ecf67600ef.png';
 import CalendarImage from '../assets/Deduru Oya.jpg'
-import { Search, Bell, Package, FileText, Users, Plus, LogOut, Grid, Calendar, ArrowBigRightIcon, Shield } from 'lucide-react';
+import { Search, Bell, Package, FileText, Users, Plus, LogOut, Grid, ArrowBigRightIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function IrrigationDashboard() {
@@ -104,7 +104,7 @@ export default function IrrigationDashboard() {
         <div className='flex items-center justify-center'>
           <button>
             <div className="bg-blue-600 flex items-center px-4 py-3 hover:bg-blue-400 text-black rounded-lg mx-2"
-            onClick={() => navigate('/add-new-item')}>
+            onClick={() => navigate('/items')}>
               <Plus className="mr-3" size={20} />
               <span>Add New Item</span>
             </div>
@@ -216,8 +216,8 @@ export default function IrrigationDashboard() {
           <div className="grid grid-cols-2 gap-6 mt-6">
             {/* Row 1 */}
             <div className="bg-lime-900 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
-                onClick={() => navigate('/store-items')}>
-              <h2 className="text-4xl font-bold text-white">Store Items</h2>
+                onClick={() => navigate('/categories')}>
+              <h2 className="text-4xl font-bold text-white">Item Categories</h2>
             </div>
             <div className="bg-emerald-900 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
                 onClick={() => navigate('/officer-details')}>

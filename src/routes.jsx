@@ -3,6 +3,10 @@ import App from './App';
 import LoginPage from './components/Login';
 import CreateAccountPage from './components/Register';
 import Dashboard from './components/Dashboard';
+import Categories from './components/Categories';
+import AddNewItemsPage from './components/Add New Items';
+import FillingStations from './components/Filling Stations';
+import ErrorBoundary from './components/Error Boundry';
 
 const router = createBrowserRouter([
   {
@@ -25,6 +29,21 @@ const router = createBrowserRouter([
       {
         path: 'dashboard',
         element: <Dashboard />
+      },
+      {
+        path: 'categories',
+        element: 
+        <ErrorBoundary>
+          <Categories />
+        </ErrorBoundary> 
+      },
+      {
+        path: 'items',
+        element: <AddNewItemsPage />
+      },
+      {
+        path: 'filling-stations',
+        element: <FillingStations />
       }
       
     ]
