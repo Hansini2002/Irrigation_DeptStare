@@ -1620,7 +1620,7 @@ app.post('/api/suppliers', authenticateToken, async (req, res) => {
   }
 });
 
-// Update supplier
+  // Update supplier
 app.put('/api/suppliers/:sup_id', authenticateToken, async (req, res) => {
   try {
     const { sup_id } = req.params;
@@ -1665,6 +1665,78 @@ app.delete('/api/suppliers/:sup_id', authenticateToken, async (req, res) => {
       error: 'Failed to delete supplier',
       details: err.message 
     });
+  }
+});
+
+// REPORTS ENDPOINTS
+// Get all report categories
+app.get('/api/report-categories', authenticateToken, async (req, res) => {
+  try {
+    const results = await query('SELECT * FROM report_categories ORDER BY name');
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch reports' });
+  }
+});
+
+// Add new report category
+app.post('/api/report-categories', authenticateToken, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const result = await query(
+      'INSERT INTO report_categories (name) VALUES (?)',
+      [name]
+    );
+    const newCategory = await query(
+      'SELECT * FROM report_categories WHERE id = ?',
+      [result.insertId]
+    );
+    res.json(newCategory[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add report category' });
+  }
+});
+
+// Delete report category
+app.delete('/api/report-categories/:id', authenticateToken, async (req, res) => {
+  try {
+    await query('DELETE FROM report_categories WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete report category' });
+  }
+});
+
+// REPORT DEFINITIONS ENDPOINTS
+// Get report definition (fields)
+app.get('/api/report-definitions', authenticateToken, async (req, res) => {
+  try {
+    const categoryId = req.query.category_id;
+    
+    const category = await query(
+      'SELECT * FROM report_categories WHERE id = ?',
+      [categoryId]
+    );
+    
+    if (category.length === 0) {
+      return res.status(404).json({ error: 'Report category not found' });
+    }
+    
+    const fields = await query(
+      'SELECT * FROM report_definitions WHERE report_category_id = ? ORDER BY id',
+      [categoryId]
+    );
+    
+    res.json({
+      category: category[0],
+      fields: fields
+      });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load report definition' });
   }
 });
 
@@ -1800,8 +1872,9 @@ app.get('/api/data-sources', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch data sources' });
-  }
+}
 });
+
 
 // Start server
 (async () => {
@@ -1809,4 +1882,5 @@ app.get('/api/data-sources', authenticateToken, async (req, res) => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
-})();
+}
+)();
