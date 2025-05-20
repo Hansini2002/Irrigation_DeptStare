@@ -32,43 +32,42 @@ export default function IrrigationDashboard() {
     }
   }, [navigate]);
 
-  // Function to fetch low stock items count
-  const fetchLowStockCount = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/low-stock-count', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setLowStockCount(data.count);
-      }
-    } catch (error) {
-      console.error('Error fetching low stock count:', error);
-    }
-  };
-
-   // function to fetch total advances
-  const fetchTotalRemainingBalances = async () => {
+  // Function to fetch low stock items count by comparing quantity with minimum level
+const fetchLowStockCount = async () => {
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch('http://localhost:5000/api/filling-stations/total-remaining-balances', {
+    const response = await fetch('http://localhost:5000/api/items/low-stock-count', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
     const data = await response.json();
-    console.log("Total Remaining Balances API Response:", data);
     if (data.success) {
-      setTotalAdvances(Number(data.totalRemaining) || 0);
+      setLowStockCount(data.count);
     }
   } catch (error) {
-    console.error('Error fetching total remaining balances:', error);
+    console.error('Error fetching low stock count:', error);
   }
 };
 
+  // function to fetch total advances
+  const fetchTotalRemainingBalances = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/filling-stations/total-remaining-balances', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      console.log("Total Remaining Balances API Response:", data);
+      if (data.success) {
+        setTotalAdvances(Number(data.totalRemaining) || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching total remaining balances:', error);
+    }
+  };
 
   const handleLogout = () => {
     // Clear user data from localStorage
@@ -103,13 +102,6 @@ export default function IrrigationDashboard() {
               onClick={() => navigate('/reports')}>
                 <FileText className="mr-3" size={20} />
                 <span>Reports & Forms</span>
-              </div>
-            </li>
-            <li className="mb-1">
-              <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
-              onClick={() => navigate('/inventory-book')}>
-                <Package className="mr-3" size={20} />
-                <span>Inventory Book</span>
               </div>
             </li>
             <li className="mb-1">
@@ -217,28 +209,20 @@ export default function IrrigationDashboard() {
             <div className="w-1/2 p-6 bg-teal-700 rounded-lg">
               <h2 className="text-xl font-semibold text-white mb-2">Low Stock Alerts</h2>
               <div className="bg-teal-400 p-4 rounded-lg">
-                <h3 className="text-black mb-2">No. of alerts</h3>
+                <h3 className="text-black mb-2">Items below minimum level</h3>
                 <div className="bg-blue-400 p-4 rounded flex justify-between items-center">
                   <span className="text-2xl font-bold">{lowstockCount}</span>
-                  <button className="flex items-center px-4 py-2 bg-blue-400 text-black-900 rounded-full"
-                  onClick={() => navigate('/stock-details')}>
-                    <ArrowBigRightIcon className="mr-1 hover:bg-blue-600" size={28} />
-                  </button>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-2 gap-6 mt-6">
+          <div className="grid grid-cols-1 gap-6 mt-6">
             {/* Row 1 */}
             <div className="bg-lime-900 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-lime-700 transition-colors"
                 onClick={() => navigate('/categories')}>
               <h2 className="text-4xl font-bold text-white">Item Categories</h2>
-            </div>
-            <div className="bg-emerald-900 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
-                onClick={() => navigate('/officer-details')}>
-              <h2 className="text-4xl font-bold text-white">Officers' Details</h2>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-6 mt-6">
@@ -247,9 +231,9 @@ export default function IrrigationDashboard() {
                 onClick={() => navigate('/filling-stations')}>
               <h2 className="text-4xl font-bold text-white">Filling Stations</h2>
             </div>
-            <div className="bg-green-700 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-green-400 transition-colors"
-                onClick={() => navigate('/transaction-details')}>
-              <h2 className="text-4xl font-bold text-white">Transaction Details</h2>
+            <div className="bg-emerald-900 rounded-full h-48 flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors"
+                onClick={() => navigate('/officer-details')}>
+              <h2 className="text-4xl font-bold text-white">Officers' Details</h2>
             </div>
           </div>
         </div>
