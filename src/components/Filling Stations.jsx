@@ -54,8 +54,8 @@ export default function Fillingstations() {
     const handleSubmitNewFillingstations = async (e) => {
         e.preventDefault();
         
-        if (!newFillingstationName.trim()) {
-            alert('Station name cannot be empty');
+        if (!newFillingstationID.trim() || !newFillingstationName.trim() || !newFillingstationLocation.trim()) {
+            alert('All fields are required');
             return;
         }
 
@@ -66,20 +66,27 @@ export default function Fillingstations() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({ station_name: newFillingstationName })
+                body: JSON.stringify({ 
+                    fs_id: newFillingstationID,
+                    station_name: newFillingstationName,
+                    address: newFillingstationLocation
+                })
             });
 
             const data = await response.json();
 
             if (!response.ok) {
+                console.error('Server response:', data); // Add this line
                 throw new Error(data.message || 'Failed to add station');
             }
 
             await fetchFillingstations();
+            setNewFillingstationID('');
             setNewFillingstationName('');
+            setNewFillingstationLocation('');
             setShowAddModal(false);
         } catch (error) {
-            console.error('Error adding station:', error);
+            console.error('Full error:', error, 'Response:', error.response); // Add this line
             alert(error.message);
         }
     };
@@ -100,17 +107,18 @@ export default function Fillingstations() {
             });
 
             const data = await response.json();
+            console.log('Delete response:', data); 
 
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to delete station');
+                throw new Error(data.message || `Failed to delete station (HTTP ${response.status})`);
             }
 
             await fetchFillingstations();
             setShowDeleteModal(false);
             setFillingstationToDelete(null);
         } catch (error) {
-            console.error('Error deleting station:', error);
-            alert(`Error deleting station: ${error.message}`);
+            console.error('Full delete error:', error);
+            alert(`Error deleting station: ${error.message}\nStation ID: ${fillingStationToDelete?.fs_id}`);
         }
     };
 

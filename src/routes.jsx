@@ -2,11 +2,14 @@ import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
 import LoginPage from './components/Login';
 import CreateAccountPage from './components/Register';
-import Dashboard from './components/Dashboard';
+import IrrigationDashboard from './components/Dashboard';
 import Categories from './components/Categories';
 import AddNewItemsPage from './components/Add New Items';
 import FillingStations from './components/Filling Stations';
+import FillingStationDetail from './components/Station Details';
 import ErrorBoundary from './components/Error Boundry';
+import OfficersPage from './components/OfficersPage';
+import OfficerDetails from './components/Officer details';
 
 const router = createBrowserRouter([
   {
@@ -28,7 +31,10 @@ const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: <Dashboard />
+        element: 
+        <ErrorBoundary>
+          <IrrigationDashboard />
+        </ErrorBoundary> 
       },
       {
         path: 'categories',
@@ -43,7 +49,22 @@ const router = createBrowserRouter([
       },
       {
         path: 'filling-stations',
-        element: <FillingStations />
+        element:
+        <ErrorBoundary>
+          <FillingStations />
+        </ErrorBoundary> 
+      },
+      {
+        path: 'filling-stations/:fs_id',
+        element:<FillingStationDetail />
+      },
+      {
+        path: 'officer-details',
+        element: <OfficersPage/>
+      },
+      {
+        path: 'officer-details/:officer_id',
+        element: <OfficerDetails />
       }
       
     ]

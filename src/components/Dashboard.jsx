@@ -8,7 +8,7 @@ export default function IrrigationDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [lowstockCount, setLowStockCount] = useState(0);
-  //const [fuelAccount, setFuelAccount] = useState(0);
+  const [totalRemaining, setTotalAdvances] = useState(0);
 
   // Check if user is authenticated (simple version without token verification)
   useEffect(() => {
@@ -23,6 +23,7 @@ export default function IrrigationDashboard() {
       const user = JSON.parse(userData);
       setUser(user);
       fetchLowStockCount();
+      fetchTotalRemainingBalances();
     } catch (error) {
       console.error('Error parsing user data:', error);
       localStorage.removeItem('user');
@@ -48,6 +49,26 @@ export default function IrrigationDashboard() {
       console.error('Error fetching low stock count:', error);
     }
   };
+
+   // function to fetch total advances
+  const fetchTotalRemainingBalances = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:5000/api/filling-stations/total-remaining-balances', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+    console.log("Total Remaining Balances API Response:", data);
+    if (data.success) {
+      setTotalAdvances(Number(data.totalRemaining) || 0);
+    }
+  } catch (error) {
+    console.error('Error fetching total remaining balances:', error);
+  }
+};
+
 
   const handleLogout = () => {
     // Clear user data from localStorage
@@ -185,13 +206,9 @@ export default function IrrigationDashboard() {
             <div className="w-1/2 p-6 bg-teal-700 rounded-lg">
               <h2 className="text-xl font-semibold text-white mb-2">Fuel Account</h2>
               <div className="bg-teal-400 p-4 rounded-lg">
-                <h3 className="text-black mb-2">Balance/Liability</h3>
+                <h3 className="text-black mb-2">Net Remaining Balance</h3>
                 <div className="bg-blue-400 p-4 rounded flex justify-between items-center">
-                  <span className="text-2xl font-bold">Rs. 14,032.56</span>
-                  <button className="flex items-center px-4 py-2 bg-blue-400 text-black-900 rounded-full"
-                  onClick={() => navigate('/fuel-account')}>
-                    <ArrowBigRightIcon className="mr-1 hover:bg-blue-600" size={28} />
-                  </button>
+                  <span className="text-2xl font-bold">Rs. {totalRemaining.toFixed(2)}</span>
                 </div>
               </div>
             </div>
