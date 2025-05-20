@@ -221,8 +221,7 @@ export default function Fillingstations() {
                     <div className="flex items-center">
                         <button 
                             onClick={handleBackClick}
-                            className="p-2 rounded-full hover:bg-gray-100 transition-colors mr-2"
-                        >
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors mr-2">
                             <ChevronLeft size={24} />
                         </button>
                         <h1 className="text-2xl font-bold">Filling Stations</h1>
@@ -230,8 +229,7 @@ export default function Fillingstations() {
                     
                     <button 
                         onClick={handleAddFillingstations}
-                        className="bg-green-600 flex items-center px-4 py-3 hover:bg-green-500 text-white rounded-lg"
-                    >
+                        className="bg-green-600 flex items-center px-4 py-3 hover:bg-green-500 text-white rounded-lg">
                         <Plus className='mr-3' size={24} />
                         <span>Add New Station</span>
                     </button>
@@ -245,16 +243,14 @@ export default function Fillingstations() {
                                 key={station.fs_id}
                                 onClick={() => handleStationClick(station.fs_id)}
                                 className="flex justify-between items-center p-4 rounded-md cursor-pointer
-                                           border border-gray-200 hover:bg-green-50 transition-colors"
-                            >
+                                           border border-gray-200 hover:bg-green-50 transition-colors">
                                 <span className="text-lg font-medium text-gray-800">
                                     {station.station_name}
                                 </span>
                                 <button 
                                     onClick={(e) => handleDeleteClick(station, e)}
                                     className="p-2 text-red-600 hover:bg-red-50 rounded-full"
-                                    title="Delete Station"
-                                >
+                                    title="Delete Station">
                                     <Trash2 size={20} />
                                 </button>
                             </div>
@@ -275,8 +271,7 @@ export default function Fillingstations() {
                             <h2 className="text-xl font-bold">Add New Station</h2>
                             <button 
                                 onClick={() => setShowAddModal(false)}
-                                className="p-1 rounded-full hover:bg-gray-100"
-                            >
+                                className="p-1 rounded-full hover:bg-gray-100">
                                 <X size={24} />
                             </button>
                         </div>
@@ -294,8 +289,7 @@ export default function Fillingstations() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                                     placeholder="Enter station ID"
                                     required
-                                    autoFocus
-                                />
+                                    autoFocus />
                             </div>
 
                             <div className="mb-4">
@@ -310,8 +304,7 @@ export default function Fillingstations() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                                     placeholder="Enter station name"
                                     required
-                                    autoFocus
-                                />
+                                    autoFocus />
                             </div>
 
                             <div className="mb-4">
@@ -326,22 +319,19 @@ export default function Fillingstations() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                                     placeholder="Enter station address"
                                     required
-                                    autoFocus
-                                />
+                                    autoFocus/>
                             </div>
                             
                             <div className="flex justify-end space-x-3">
                                 <button
                                     type="button"
                                     onClick={() => setShowAddModal(false)}
-                                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                                >
+                                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                                >
+                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                                     Add Station
                                 </button>
                             </div>
@@ -358,8 +348,7 @@ export default function Fillingstations() {
                             <h2 className="text-xl font-bold">Delete Station</h2>
                             <button 
                                 onClick={() => setShowDeleteModal(false)}
-                                className="p-1 rounded-full hover:bg-gray-100"
-                            >
+                                className="p-1 rounded-full hover:bg-gray-100">
                                 <X size={24} />
                             </button>
                         </div>
@@ -375,15 +364,13 @@ export default function Fillingstations() {
                             <button
                                 type="button"
                                 onClick={() => setShowDeleteModal(false)}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                            >
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                                 Cancel
                             </button>
                             <button
                                 type="button"
                                 onClick={confirmDeleteFillingstations}
-                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                            >
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                                 Delete
                             </button>
                         </div>

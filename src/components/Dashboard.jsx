@@ -100,7 +100,7 @@ export default function IrrigationDashboard() {
             </li>
             <li className="mb-1">
               <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
-              onClick={() => navigate('/stock-details')}>
+              onClick={() => navigate('/reports')}>
                 <FileText className="mr-3" size={20} />
                 <span>Reports & Forms</span>
               </div>

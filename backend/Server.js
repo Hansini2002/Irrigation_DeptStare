@@ -9,6 +9,11 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // MySQL Connection
 const db = mysql.createConnection({
   host: 'localhost',
@@ -42,6 +47,16 @@ function authenticateToken(req, res, next) {
     next();
   });
 }
+
+// Promisified query function
+const query = (sql, values) => {
+  return new Promise((resolve, reject) => {
+    db.query(sql, values, (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
+};
 
 // Login Endpoint
 app.post('/login', (req, res) => {
@@ -519,6 +534,143 @@ app.delete('/api/items/:item_id', authenticateToken, (req, res) => {
     });
 });
 
+// Get all report categories
+app.get('/api/report-categories', authenticateToken, async (req, res) => {
+  try {
+    const results = await query('SELECT * FROM report_categories ORDER BY name');
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch reports' });
+  }
+});
+
+// Add new report category
+app.post('/api/report-categories', authenticateToken, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const result = await query(
+      'INSERT INTO report_categories (name) VALUES (?)',
+      [name]
+    );
+    const newCategory = await query(
+      'SELECT * FROM report_categories WHERE id = ?',
+      [result.insertId]
+    );
+    res.json(newCategory[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add report category' });
+  }
+});
+
+// Delete report category
+app.delete('/api/report-categories/:id', authenticateToken, async (req, res) => {
+  try {
+    await query('DELETE FROM report_categories WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete report category' });
+  }
+});
+
+// Get report definition (fields)
+app.get('/api/report-definitions', authenticateToken, async (req, res) => {
+  try {
+    const categoryId = req.query.category_id;
+    
+    const category = await query(
+      'SELECT * FROM report_categories WHERE id = ?',
+      [categoryId]
+    );
+    
+    if (category.length === 0) {
+      return res.status(404).json({ error: 'Report category not found' });
+    }
+    
+    const fields = await query(
+      'SELECT * FROM report_definitions WHERE report_category_id = ? ORDER BY id',
+      [categoryId]
+    );
+    
+    res.json({
+      category: category[0],
+      fields: fields
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load report definition' });
+  }
+});
+
+// Create new report instance
+app.post('/api/reports', authenticateToken, async (req, res) => {
+  try {
+    const { report_category_id } = req.body;
+    const result = await query(
+      'INSERT INTO reports (report_category_id, created_by) VALUES (?, ?)',
+      [report_category_id, req.user.id]
+    );
+    
+    const newReport = await query(
+      'SELECT * FROM reports WHERE id = ?',
+      [result.insertId]
+    );
+    
+    res.json(newReport[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create report' });
+  }
+});
+
+// Bulk insert report data
+app.post('/api/report-data/bulk', authenticateToken, async (req, res) => {
+  try {
+    const data = req.body;
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      return res.status(400).json({ error: 'No data provided' });
+    }
+    
+    // Prepare and execute all inserts in a transaction
+    await query('START TRANSACTION');
+    
+    for (const item of data) {
+      await query(
+        'INSERT INTO report_data (report_id, field_name, field_value) VALUES (?, ?, ?)',
+        [item.report_id, item.field_name, item.field_value]
+      );
+    }
+    
+    await query('COMMIT');
+    res.json({ success: true });
+  } catch (err) {
+    await query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save report data' });
+  }
+});
+
+// Get data source (generic endpoint for dynamic fields)
+app.get('/api/:source', authenticateToken, async (req, res) => {
+  try {
+    const { source } = req.params;
+    
+    // Validate source to prevent SQL injection
+    if (!/^[a-z_]+$/.test(source)) {
+      return res.status(400).json({ error: 'Invalid data source' });
+    }
+    
+    const results = await query(`SELECT * FROM ${source}`);
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch data source' });
+  }
+});
+
 // FILLING STATIONS ENDPOINTS
 // Get all filling stations
 app.get('/api/filling-stations', authenticateToken, (req, res) => {
@@ -538,11 +690,11 @@ app.get('/api/filling-stations', authenticateToken, (req, res) => {
 
 // Create new filling station
 app.post('/api/filling-stations', authenticateToken, (req, res) => {
-  console.log('Received request to create station:', req.body); // Add this line
+  console.log('Received request to create station:', req.body);
   const { fs_id, station_name, address } = req.body;
   
   if (!fs_id || !station_name || !address) {
-    console.log('Validation failed - missing fields'); // Add this line
+    console.log('Validation failed - missing fields'); 
     return res.status(400).json({ 
       success: false, 
       message: 'Station ID, name and address are required' 
@@ -551,7 +703,7 @@ app.post('/api/filling-stations', authenticateToken, (req, res) => {
 
   // Check if station ID already exists
   const checkQuery = 'SELECT FS_ID as fs_id, Station_Name as station_name, Address as address FROM filling_stations WHERE FS_ID = ?';
-  console.log('Executing check query:', checkQuery, 'with ID:', fs_id); // Add this line
+  console.log('Executing check query:', checkQuery, 'with ID:', fs_id); 
   
   db.query(checkQuery, [fs_id], (err, results) => {
     if (err) {
@@ -564,7 +716,7 @@ app.post('/api/filling-stations', authenticateToken, (req, res) => {
     }
 
     if (results.length > 0) {
-      console.log('Station ID already exists'); // Add this line
+      console.log('Station ID already exists'); 
       return res.status(409).json({ 
         success: false, 
         message: 'Station with this ID already exists' 

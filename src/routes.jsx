@@ -10,6 +10,8 @@ import FillingStationDetail from './components/Station Details';
 import ErrorBoundary from './components/Error Boundry';
 import OfficersPage from './components/OfficersPage';
 import OfficerDetails from './components/Officer details';
+import ReportsAndForms from './components/Reports/Report and Forms';
+import ReportForm from './components/Reports/Report Form';
 
 const router = createBrowserRouter([
   {
@@ -65,6 +67,14 @@ const router = createBrowserRouter([
       {
         path: 'officer-details/:officer_id',
         element: <OfficerDetails />
+      },
+      {
+        path: 'reports',
+        element: <ReportsAndForms />
+      },
+      {
+        path: 'reports/:id',
+        element: <ReportForm />
       }
       
     ]
