@@ -107,13 +107,6 @@ export default function IrrigationDashboard() {
             </li>
             <li className="mb-1">
               <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
-              onClick={() => navigate('/inventory-book')}>
-                <Package className="mr-3" size={20} />
-                <span>Inventory Book</span>
-              </div>
-            </li>
-            <li className="mb-1">
-              <div className="flex items-center px-4 py-3 hover:bg-green-600 text-black rounded-lg mx-2"
               onClick={() => navigate('/suppliers')}>
                 <Users className="mr-3" size={20} />
                 <span>Suppliers</span>

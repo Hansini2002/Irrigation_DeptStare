@@ -534,141 +534,459 @@ app.delete('/api/items/:item_id', authenticateToken, (req, res) => {
     });
 });
 
-// Get all report categories
-app.get('/api/report-categories', authenticateToken, async (req, res) => {
-  try {
-    const results = await query('SELECT * FROM report_categories ORDER BY name');
+// OFFICERS ENDPOINTS
+// Get all officers
+app.get('/api/officer-details', authenticateToken, (req, res) => {
+  const query = 'SELECT * FROM officers';
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching officers:', err);
+      return res.status(500).json({ error: 'Failed to fetch officers' });
+    }
     res.json(results);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch reports' });
-  }
+  });
 });
 
-// Add new report category
-app.post('/api/report-categories', authenticateToken, async (req, res) => {
-  try {
-    const { name } = req.body;
-    const result = await query(
-      'INSERT INTO report_categories (name) VALUES (?)',
-      [name]
-    );
-    const newCategory = await query(
-      'SELECT * FROM report_categories WHERE id = ?',
-      [result.insertId]
-    );
-    res.json(newCategory[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to add report category' });
-  }
-});
-
-// Delete report category
-app.delete('/api/report-categories/:id', authenticateToken, async (req, res) => {
-  try {
-    await query('DELETE FROM report_categories WHERE id = ?', [req.params.id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to delete report category' });
-  }
-});
-
-// Get report definition (fields)
-app.get('/api/report-definitions', authenticateToken, async (req, res) => {
-  try {
-    const categoryId = req.query.category_id;
-    
-    const category = await query(
-      'SELECT * FROM report_categories WHERE id = ?',
-      [categoryId]
-    );
-    
-    if (category.length === 0) {
-      return res.status(404).json({ error: 'Report category not found' });
+app.get('/api/officer-details/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const query = 'SELECT * FROM officers WHERE id = ?';
+  
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error('Error fetching officer:', err);
+      return res.status(500).json({ error: 'Failed to fetch officer' });
     }
     
-    const fields = await query(
-      'SELECT * FROM report_definitions WHERE report_category_id = ? ORDER BY id',
-      [categoryId]
-    );
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Officer not found' });
+    }
     
-    res.json({
-      category: category[0],
-      fields: fields
+    res.json(results[0]);
+  });
+});
+
+app.post('/api/officer-details', authenticateToken, (req, res) => {
+  const {
+    id,
+    officer_name,
+    designation,
+    gender,
+    started_date,
+    end_date,
+    nic,
+    contact_no,
+    email,
+    city
+  } = req.body;
+
+  console.log('Received data:', req.body); // Add this for debugging
+
+  // Validate required fields
+  if (!id || !officer_name || !designation || !gender || !started_date || !nic || !contact_no || !city) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  // Validate NIC format
+  if (!/^([0-9]{9}[vVxX]|[0-9]{12})$/.test(nic)) {
+    return res.status(400).json({ 
+      error: 'Invalid NIC format. Must be either 9 digits with V/X or 12 digits' 
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to load report definition' });
   }
-});
 
-// Create new report instance
-app.post('/api/reports', authenticateToken, async (req, res) => {
-  try {
-    const { report_category_id } = req.body;
-    const result = await query(
-      'INSERT INTO reports (report_category_id, created_by) VALUES (?, ?)',
-      [report_category_id, req.user.id]
-    );
-    
-    const newReport = await query(
-      'SELECT * FROM reports WHERE id = ?',
-      [result.insertId]
-    );
-    
-    res.json(newReport[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to create report' });
+  // Validate contact number
+  if (!/^[0-9]{10}$/.test(contact_no)) {
+    return res.status(400).json({ error: 'Contact number must be 10 digits' });
   }
-});
 
-// Bulk insert report data
-app.post('/api/report-data/bulk', authenticateToken, async (req, res) => {
-  try {
-    const data = req.body;
-    
-    if (!Array.isArray(data) || data.length === 0) {
-      return res.status(400).json({ error: 'No data provided' });
+  const query = `
+    INSERT INTO officers 
+    (id, officer_name, designation, gender, started_date, end_date, nic, contact_no, email, city)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [
+    id,
+    officer_name,
+    designation,
+    gender,
+    started_date,
+    end_date || null,
+    nic,
+    contact_no,
+    email || null,
+    city
+  ];
+
+  console.log('Executing query:', query, 'with values:', values); // Add this for debugging
+
+  db.query(query, values, (err) => {
+    if (err) {
+      console.error('Detailed SQL Error:', err); // More detailed error logging
+      
+      if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ error: 'Officer ID already exists' });
+      }
+      
+      return res.status(500).json({ 
+        error: 'Failed to add officer',
+        details: err.message, // Include the actual SQL error message
+        sqlMessage: err.sqlMessage 
+      });
     }
     
-    // Prepare and execute all inserts in a transaction
-    await query('START TRANSACTION');
-    
-    for (const item of data) {
-      await query(
-        'INSERT INTO report_data (report_id, field_name, field_value) VALUES (?, ?, ?)',
-        [item.report_id, item.field_name, item.field_value]
-      );
-    }
-    
-    await query('COMMIT');
-    res.json({ success: true });
-  } catch (err) {
-    await query('ROLLBACK');
-    console.error(err);
-    res.status(500).json({ error: 'Failed to save report data' });
-  }
+    res.status(201).json({ message: 'Officer added successfully', id });
+  });
 });
 
-// Get data source (generic endpoint for dynamic fields)
-app.get('/api/:source', authenticateToken, async (req, res) => {
-  try {
-    const { source } = req.params;
-    
-    // Validate source to prevent SQL injection
-    if (!/^[a-z_]+$/.test(source)) {
-      return res.status(400).json({ error: 'Invalid data source' });
+app.delete('/api/officer-details/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  
+  // First check if officer exists
+  const checkQuery = 'SELECT id, officer_name, designation, gender, started_date, end_date, nic, contact_no, email, city FROM officers WHERE id = ?';
+  db.query(checkQuery, [id], (err, results) => {
+    if (err) {
+      console.error('Error checking officer:', err);
+      return res.status(500).json({ error: 'Error checking officer' });
     }
     
-    const results = await query(`SELECT * FROM ${source}`);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Officer not found' });
+    }
+    
+    // If officer exists, proceed with deletion
+    const deleteQuery = 'DELETE FROM officers WHERE id = ?';
+    db.query(deleteQuery, [id], (err) => {
+      if (err) {
+        console.error('Error deleting officer:', err);
+        return res.status(500).json({ error: 'Failed to delete officer' });
+      }
+      
+      res.json({ message: 'Officer deleted successfully' });
+    });
+  });
+});
+
+// Get officer details
+app.get('/api/officer-details/:id', authenticateToken, (req, res) => {
+  const officerId = req.params.id;
+  const sql = 'SELECT id, officer_name, designation, gender, started_date, end_date, nic, contact_no, email, city FROM officers WHERE id = ?';
+  
+  db.query(sql, [officerId], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Error fetching officer details' });
+    }
+    
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Officer not found' });
+    }
+    
+    // Return the officer data directly (not wrapped in success object)
+    res.json(result[0]);
+  });
+});
+
+// Update officer details
+app.put('/api/officer-details/:id', authenticateToken, (req, res) => {
+  const officerId = req.params.id;
+  const { designation, end_date, contact_no } = req.body;
+  
+  const sql = 'UPDATE officers SET designation = ?, end_date = ?, contact_no = ? WHERE id = ?';
+  
+  db.query(sql, [designation, end_date, contact_no, officerId], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Error updating officer details' });
+    }
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Officer not found' });
+    }
+    
+    res.json({ message: 'Officer updated successfully' });
+  });
+});
+
+// Get items issued to an officer
+app.get('/api/officer-items/:officer_id', authenticateToken, (req, res) => {
+  const officerId = req.params.officer_id;
+  
+  const sql = `
+    SELECT i.*, oi.issue_id, oi.quantity, oi.issued_date 
+    FROM issued_items oi
+    JOIN items i ON oi.item_id = i.item_id
+    WHERE oi.officer_id = ?
+  `;
+  
+  db.query(sql, [officerId], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Error fetching issued items' });
+    }
+    
     res.json(results);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch data source' });
-  }
+  });
+});
+
+// Issue new item to officer
+app.post('/api/officer-items', authenticateToken, (req, res) => {
+  const { officer_id, item_id, quantity, issued_date } = req.body;
+  
+  // First check if item has sufficient quantity
+  db.query('SELECT quantity FROM items WHERE item_id = ?', [item_id], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Error checking item quantity' });
+    }
+    
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    
+    const availableQuantity = results[0].quantity;
+    
+    if (availableQuantity < quantity) {
+      return res.status(400).json({ message: 'Insufficient quantity available' });
+    }
+    
+    // Start transaction
+    db.beginTransaction(err => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Error starting transaction' });
+      }
+      
+      // 1. Reduce item quantity in inventory
+      db.query(
+        'UPDATE items SET quantity = quantity - ? WHERE item_id = ?',
+        [quantity, item_id],
+        (err) => {
+          if (err) {
+            return db.rollback(() => {
+              console.error(err);
+              res.status(500).json({ message: 'Error updating item quantity' });
+            });
+          }
+          
+          // 2. Create issued item record
+          db.query(
+            'INSERT INTO issued_items (officer_id, item_id, quantity, issued_date) VALUES (?, ?, ?, ?)',
+            [officer_id, item_id, quantity, issued_date],
+            (err, result) => {
+              if (err) {
+                return db.rollback(() => {
+                  console.error(err);
+                  res.status(500).json({ message: 'Error issuing item' });
+                });
+              }
+              
+              // Commit transaction
+              db.commit(err => {
+                if (err) {
+                  return db.rollback(() => {
+                    console.error(err);
+                    res.status(500).json({ message: 'Error committing transaction' });
+                  });
+                }
+                
+                res.json({ 
+                  message: 'Item issued successfully',
+                  issue_id: result.insertId 
+                });
+              });
+            }
+          );
+        }
+      );
+    });
+  });
+});
+
+// Update issued item
+app.put('/api/officer-items/:issue_id', authenticateToken, (req, res) => {
+  const issueId = req.params.issue_id;
+  const { quantity, issued_date } = req.body;
+  
+  // First get the current issued item details
+  db.query(
+    'SELECT item_id, quantity FROM issued_items WHERE issue_id = ?',
+    [issueId],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Error fetching issued item' });
+      }
+      
+      if (results.length === 0) {
+        return res.status(404).json({ message: 'Issued item not found' });
+      }
+      
+      const currentQuantity = results[0].quantity;
+      const itemId = results[0].item_id;
+      const quantityDifference = currentQuantity - quantity;
+      
+      // Start transaction
+      db.beginTransaction(err => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: 'Error starting transaction' });
+        }
+        
+        // 1. Update the item quantity in inventory
+        if (quantityDifference !== 0) {
+          db.query(
+            'UPDATE items SET quantity = quantity + ? WHERE item_id = ?',
+            [quantityDifference, itemId],
+            (err) => {
+              if (err) {
+                return db.rollback(() => {
+                  console.error(err);
+                  res.status(500).json({ message: 'Error updating item quantity' });
+                });
+              }
+              
+              // 2. Update the issued item record
+              db.query(
+                'UPDATE issued_items SET quantity = ?, issued_date = ? WHERE issue_id = ?',
+                [quantity, issued_date, issueId],
+                (err) => {
+                  if (err) {
+                    return db.rollback(() => {
+                      console.error(err);
+                      res.status(500).json({ message: 'Error updating issued item' });
+                    });
+                  }
+                  
+                  // Commit transaction
+                  db.commit(err => {
+                    if (err) {
+                      return db.rollback(() => {
+                        console.error(err);
+                        res.status(500).json({ message: 'Error committing transaction' });
+                      });
+                    }
+                    
+                    res.json({ message: 'Issued item updated successfully' });
+                  });
+                }
+              );
+            }
+          );
+        } else {
+          // Only update the issued date if quantity didn't change
+          db.query(
+            'UPDATE issued_items SET issued_date = ? WHERE issue_id = ?',
+            [issued_date, issueId],
+            (err) => {
+              if (err) {
+                return db.rollback(() => {
+                  console.error(err);
+                  res.status(500).json({ message: 'Error updating issued item' });
+                });
+              }
+              
+              db.commit(err => {
+                if (err) {
+                  return db.rollback(() => {
+                    console.error(err);
+                    res.status(500).json({ message: 'Error committing transaction' });
+                  });
+                }
+                
+                res.json({ message: 'Issued item updated successfully' });
+              });
+            }
+          );
+        }
+      });
+    }
+  );
+});
+
+// Delete issued item
+app.delete('/api/officer-items/:issue_id', authenticateToken, (req, res) => {
+  const issueId = req.params.issue_id;
+  
+  // First get the issued item details
+  db.query(
+    'SELECT item_id, quantity FROM issued_items WHERE issue_id = ?',
+    [issueId],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Error fetching issued item' });
+      }
+      
+      if (results.length === 0) {
+        return res.status(404).json({ message: 'Issued item not found' });
+      }
+      
+      const itemId = results[0].item_id;
+      const quantity = results[0].quantity;
+      
+      // Start transaction
+      db.beginTransaction(err => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: 'Error starting transaction' });
+        }
+        
+        // 1. Return the quantity to inventory
+        db.query(
+          'UPDATE items SET quantity = quantity + ? WHERE item_id = ?',
+          [quantity, itemId],
+          (err) => {
+            if (err) {
+              return db.rollback(() => {
+                console.error(err);
+                res.status(500).json({ message: 'Error updating item quantity' });
+              });
+            }
+            
+            // 2. Delete the issued item record
+            db.query(
+              'DELETE FROM issued_items WHERE issue_id = ?',
+              [issueId],
+              (err) => {
+                if (err) {
+                  return db.rollback(() => {
+                    console.error(err);
+                    res.status(500).json({ message: 'Error returning item' });
+                  });
+                }
+                
+                // Commit transaction
+                db.commit(err => {
+                  if (err) {
+                    return db.rollback(() => {
+                      console.error(err);
+                      res.status(500).json({ message: 'Error committing transaction' });
+                    });
+                  }
+                  
+                  res.json({ message: 'Item returned successfully' });
+                });
+              }
+            );
+          }
+        );
+      });
+    }
+  );
+});
+
+// Get available items (with quantity > 0)
+app.get('/api/available-items', authenticateToken, (req, res) => {
+  const sql = 'SELECT * FROM items WHERE quantity > 0';
+  
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Error fetching available items' });
+    }
+    
+    res.json(results);
+  });
 });
 
 // FILLING STATIONS ENDPOINTS
@@ -1217,460 +1535,143 @@ app.post('/api/filling-stations/:fs_id/bills', authenticateToken, (req, res) => 
   });
 });
 
-
-// OFFICERS ENDPOINTS
-// Get all officers
-app.get('/api/officer-details', authenticateToken, (req, res) => {
-  const query = 'SELECT * FROM officers';
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching officers:', err);
-      return res.status(500).json({ error: 'Failed to fetch officers' });
-    }
+// REPORTS ENDPOINTS
+// Get all report categories
+app.get('/api/report-categories', authenticateToken, async (req, res) => {
+  try {
+    const results = await query('SELECT * FROM report_categories ORDER BY name');
     res.json(results);
-  });
-});
-
-app.get('/api/officer-details/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  const query = 'SELECT * FROM officers WHERE id = ?';
-  
-  db.query(query, [id], (err, results) => {
-    if (err) {
-      console.error('Error fetching officer:', err);
-      return res.status(500).json({ error: 'Failed to fetch officer' });
-    }
-    
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'Officer not found' });
-    }
-    
-    res.json(results[0]);
-  });
-});
-
-app.post('/api/officer-details', authenticateToken, (req, res) => {
-  const {
-    id,
-    officer_name,
-    designation,
-    gender,
-    started_date,
-    end_date,
-    nic,
-    contact_no,
-    email,
-    city
-  } = req.body;
-
-  console.log('Received data:', req.body); // Add this for debugging
-
-  // Validate required fields
-  if (!id || !officer_name || !designation || !gender || !started_date || !nic || !contact_no || !city) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch reports' });
   }
+});
 
-  // Validate NIC format
-  if (!/^([0-9]{9}[vVxX]|[0-9]{12})$/.test(nic)) {
-    return res.status(400).json({ 
-      error: 'Invalid NIC format. Must be either 9 digits with V/X or 12 digits' 
+// Add new report category
+app.post('/api/report-categories', authenticateToken, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const result = await query(
+      'INSERT INTO report_categories (name) VALUES (?)',
+      [name]
+    );
+    const newCategory = await query(
+      'SELECT * FROM report_categories WHERE id = ?',
+      [result.insertId]
+    );
+    res.json(newCategory[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add report category' });
+  }
+});
+
+// Delete report category
+app.delete('/api/report-categories/:id', authenticateToken, async (req, res) => {
+  try {
+    await query('DELETE FROM report_categories WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete report category' });
+  }
+});
+
+// REPORT DEFINITIONS ENDPOINTS
+// Get report definition (fields)
+app.get('/api/report-definitions', authenticateToken, async (req, res) => {
+  try {
+    const categoryId = req.query.category_id;
+    
+    const category = await query(
+      'SELECT * FROM report_categories WHERE id = ?',
+      [categoryId]
+    );
+    
+    if (category.length === 0) {
+      return res.status(404).json({ error: 'Report category not found' });
+    }
+    
+    const fields = await query(
+      'SELECT * FROM report_definitions WHERE report_category_id = ? ORDER BY id',
+      [categoryId]
+    );
+    
+    res.json({
+      category: category[0],
+      fields: fields
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load report definition' });
   }
+});
 
-  // Validate contact number
-  if (!/^[0-9]{10}$/.test(contact_no)) {
-    return res.status(400).json({ error: 'Contact number must be 10 digits' });
+// Create new report instance
+app.post('/api/reports', authenticateToken, async (req, res) => {
+  try {
+    const { report_category_id } = req.body;
+    const result = await query(
+      'INSERT INTO reports (report_category_id, created_by) VALUES (?, ?)',
+      [report_category_id, req.user.id]
+    );
+    
+    const newReport = await query(
+      'SELECT * FROM reports WHERE id = ?',
+      [result.insertId]
+    );
+    
+    res.json(newReport[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create report' });
   }
-
-  const query = `
-    INSERT INTO officers 
-    (id, officer_name, designation, gender, started_date, end_date, nic, contact_no, email, city)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  const values = [
-    id,
-    officer_name,
-    designation,
-    gender,
-    started_date,
-    end_date || null,
-    nic,
-    contact_no,
-    email || null,
-    city
-  ];
-
-  console.log('Executing query:', query, 'with values:', values); // Add this for debugging
-
-  db.query(query, values, (err) => {
-    if (err) {
-      console.error('Detailed SQL Error:', err); // More detailed error logging
-      
-      if (err.code === 'ER_DUP_ENTRY') {
-        return res.status(409).json({ error: 'Officer ID already exists' });
-      }
-      
-      return res.status(500).json({ 
-        error: 'Failed to add officer',
-        details: err.message, // Include the actual SQL error message
-        sqlMessage: err.sqlMessage 
-      });
-    }
-    
-    res.status(201).json({ message: 'Officer added successfully', id });
-  });
 });
 
-app.delete('/api/officer-details/:id', authenticateToken, (req, res) => {
-  const { id } = req.params;
-  
-  // First check if officer exists
-  const checkQuery = 'SELECT id, officer_name, designation, gender, started_date, end_date, nic, contact_no, email, city FROM officers WHERE id = ?';
-  db.query(checkQuery, [id], (err, results) => {
-    if (err) {
-      console.error('Error checking officer:', err);
-      return res.status(500).json({ error: 'Error checking officer' });
+// Bulk insert report data
+app.post('/api/report-data/bulk', authenticateToken, async (req, res) => {
+  try {
+    const data = req.body;
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      return res.status(400).json({ error: 'No data provided' });
     }
     
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'Officer not found' });
-    }
+    // Prepare and execute all inserts in a transaction
+    await query('START TRANSACTION');
     
-    // If officer exists, proceed with deletion
-    const deleteQuery = 'DELETE FROM officers WHERE id = ?';
-    db.query(deleteQuery, [id], (err) => {
-      if (err) {
-        console.error('Error deleting officer:', err);
-        return res.status(500).json({ error: 'Failed to delete officer' });
-      }
-      
-      res.json({ message: 'Officer deleted successfully' });
-    });
-  });
-});
-
-// Get officer details
-app.get('/api/officer-details/:id', authenticateToken, (req, res) => {
-  const officerId = req.params.id;
-  const sql = 'SELECT id, officer_name, designation, gender, started_date, end_date, nic, contact_no, email, city FROM officers WHERE id = ?';
-  
-  db.query(sql, [officerId], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Error fetching officer details' });
-    }
-    
-    if (result.length === 0) {
-      return res.status(404).json({ error: 'Officer not found' });
-    }
-    
-    // Return the officer data directly (not wrapped in success object)
-    res.json(result[0]);
-  });
-});
-
-// Update officer details
-app.put('/api/officer-details/:id', authenticateToken, (req, res) => {
-  const officerId = req.params.id;
-  const { designation, end_date, contact_no } = req.body;
-  
-  const sql = 'UPDATE officers SET designation = ?, end_date = ?, contact_no = ? WHERE id = ?';
-  
-  db.query(sql, [designation, end_date, contact_no, officerId], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Error updating officer details' });
-    }
-    
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Officer not found' });
-    }
-    
-    res.json({ message: 'Officer updated successfully' });
-  });
-});
-
-// Get items issued to an officer
-app.get('/api/officer-items/:officer_id', authenticateToken, (req, res) => {
-  const officerId = req.params.officer_id;
-  
-  const sql = `
-    SELECT i.*, oi.issue_id, oi.quantity, oi.issued_date 
-    FROM issued_items oi
-    JOIN items i ON oi.item_id = i.item_id
-    WHERE oi.officer_id = ?
-  `;
-  
-  db.query(sql, [officerId], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Error fetching issued items' });
-    }
-    
-    res.json(results);
-  });
-});
-
-// Issue new item to officer
-app.post('/api/officer-items', authenticateToken, (req, res) => {
-  const { officer_id, item_id, quantity, issued_date } = req.body;
-  
-  // First check if item has sufficient quantity
-  db.query('SELECT quantity FROM items WHERE item_id = ?', [item_id], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Error checking item quantity' });
-    }
-    
-    if (results.length === 0) {
-      return res.status(404).json({ message: 'Item not found' });
-    }
-    
-    const availableQuantity = results[0].quantity;
-    
-    if (availableQuantity < quantity) {
-      return res.status(400).json({ message: 'Insufficient quantity available' });
-    }
-    
-    // Start transaction
-    db.beginTransaction(err => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Error starting transaction' });
-      }
-      
-      // 1. Reduce item quantity in inventory
-      db.query(
-        'UPDATE items SET quantity = quantity - ? WHERE item_id = ?',
-        [quantity, item_id],
-        (err) => {
-          if (err) {
-            return db.rollback(() => {
-              console.error(err);
-              res.status(500).json({ message: 'Error updating item quantity' });
-            });
-          }
-          
-          // 2. Create issued item record
-          db.query(
-            'INSERT INTO issued_items (officer_id, item_id, quantity, issued_date) VALUES (?, ?, ?, ?)',
-            [officer_id, item_id, quantity, issued_date],
-            (err, result) => {
-              if (err) {
-                return db.rollback(() => {
-                  console.error(err);
-                  res.status(500).json({ message: 'Error issuing item' });
-                });
-              }
-              
-              // Commit transaction
-              db.commit(err => {
-                if (err) {
-                  return db.rollback(() => {
-                    console.error(err);
-                    res.status(500).json({ message: 'Error committing transaction' });
-                  });
-                }
-                
-                res.json({ 
-                  message: 'Item issued successfully',
-                  issue_id: result.insertId 
-                });
-              });
-            }
-          );
-        }
+    for (const item of data) {
+      await query(
+        'INSERT INTO report_data (report_id, field_name, field_value) VALUES (?, ?, ?)',
+        [item.report_id, item.field_name, item.field_value]
       );
-    });
-  });
-});
-
-// Update issued item
-app.put('/api/officer-items/:issue_id', authenticateToken, (req, res) => {
-  const issueId = req.params.issue_id;
-  const { quantity, issued_date } = req.body;
-  
-  // First get the current issued item details
-  db.query(
-    'SELECT item_id, quantity FROM issued_items WHERE issue_id = ?',
-    [issueId],
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Error fetching issued item' });
-      }
-      
-      if (results.length === 0) {
-        return res.status(404).json({ message: 'Issued item not found' });
-      }
-      
-      const currentQuantity = results[0].quantity;
-      const itemId = results[0].item_id;
-      const quantityDifference = currentQuantity - quantity;
-      
-      // Start transaction
-      db.beginTransaction(err => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ message: 'Error starting transaction' });
-        }
-        
-        // 1. Update the item quantity in inventory
-        if (quantityDifference !== 0) {
-          db.query(
-            'UPDATE items SET quantity = quantity + ? WHERE item_id = ?',
-            [quantityDifference, itemId],
-            (err) => {
-              if (err) {
-                return db.rollback(() => {
-                  console.error(err);
-                  res.status(500).json({ message: 'Error updating item quantity' });
-                });
-              }
-              
-              // 2. Update the issued item record
-              db.query(
-                'UPDATE issued_items SET quantity = ?, issued_date = ? WHERE issue_id = ?',
-                [quantity, issued_date, issueId],
-                (err) => {
-                  if (err) {
-                    return db.rollback(() => {
-                      console.error(err);
-                      res.status(500).json({ message: 'Error updating issued item' });
-                    });
-                  }
-                  
-                  // Commit transaction
-                  db.commit(err => {
-                    if (err) {
-                      return db.rollback(() => {
-                        console.error(err);
-                        res.status(500).json({ message: 'Error committing transaction' });
-                      });
-                    }
-                    
-                    res.json({ message: 'Issued item updated successfully' });
-                  });
-                }
-              );
-            }
-          );
-        } else {
-          // Only update the issued date if quantity didn't change
-          db.query(
-            'UPDATE issued_items SET issued_date = ? WHERE issue_id = ?',
-            [issued_date, issueId],
-            (err) => {
-              if (err) {
-                return db.rollback(() => {
-                  console.error(err);
-                  res.status(500).json({ message: 'Error updating issued item' });
-                });
-              }
-              
-              db.commit(err => {
-                if (err) {
-                  return db.rollback(() => {
-                    console.error(err);
-                    res.status(500).json({ message: 'Error committing transaction' });
-                  });
-                }
-                
-                res.json({ message: 'Issued item updated successfully' });
-              });
-            }
-          );
-        }
-      });
-    }
-  );
-});
-
-// Delete issued item
-app.delete('/api/officer-items/:issue_id', authenticateToken, (req, res) => {
-  const issueId = req.params.issue_id;
-  
-  // First get the issued item details
-  db.query(
-    'SELECT item_id, quantity FROM issued_items WHERE issue_id = ?',
-    [issueId],
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Error fetching issued item' });
-      }
-      
-      if (results.length === 0) {
-        return res.status(404).json({ message: 'Issued item not found' });
-      }
-      
-      const itemId = results[0].item_id;
-      const quantity = results[0].quantity;
-      
-      // Start transaction
-      db.beginTransaction(err => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ message: 'Error starting transaction' });
-        }
-        
-        // 1. Return the quantity to inventory
-        db.query(
-          'UPDATE items SET quantity = quantity + ? WHERE item_id = ?',
-          [quantity, itemId],
-          (err) => {
-            if (err) {
-              return db.rollback(() => {
-                console.error(err);
-                res.status(500).json({ message: 'Error updating item quantity' });
-              });
-            }
-            
-            // 2. Delete the issued item record
-            db.query(
-              'DELETE FROM issued_items WHERE issue_id = ?',
-              [issueId],
-              (err) => {
-                if (err) {
-                  return db.rollback(() => {
-                    console.error(err);
-                    res.status(500).json({ message: 'Error returning item' });
-                  });
-                }
-                
-                // Commit transaction
-                db.commit(err => {
-                  if (err) {
-                    return db.rollback(() => {
-                      console.error(err);
-                      res.status(500).json({ message: 'Error committing transaction' });
-                    });
-                  }
-                  
-                  res.json({ message: 'Item returned successfully' });
-                });
-              }
-            );
-          }
-        );
-      });
-    }
-  );
-});
-
-// Get available items (with quantity > 0)
-app.get('/api/available-items', authenticateToken, (req, res) => {
-  const sql = 'SELECT * FROM items WHERE quantity > 0';
-  
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Error fetching available items' });
     }
     
+    await query('COMMIT');
+    res.json({ success: true });
+  } catch (err) {
+    await query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save report data' });
+  }
+});
+
+// Get data source (generic endpoint for dynamic fields)
+app.get('/api/:source', authenticateToken, async (req, res) => {
+  try {
+    const { source } = req.params;
+    
+    // Validate source to prevent SQL injection
+    if (!/^[a-z_]+$/.test(source)) {
+      return res.status(400).json({ error: 'Invalid data source' });
+    }
+    
+    const results = await query(`SELECT * FROM ${source}`);
     res.json(results);
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch data source' });
+  }
 });
 
 // Start server
