@@ -1,0 +1,83 @@
+.reportContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.reportHeader {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.reportHeader h1 {
+  color: #333;
+}
+
+.loader {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+}
+
+.reportForm {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #555;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.formGroup textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.formGroup select {
+  height: 40px;
+}
+
+.required {
+  color: #f44336;
+  margin-left: 4px;
+}
+
+.formActions {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.submitButton {
+  padding: 12px 24px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submitButton:hover {
+  background-color: #45a049;
+}
